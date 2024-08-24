@@ -7,9 +7,8 @@
 
 bool executed_1 = false;
 bool intersected1 = false;
-bool intersected2 = false;
+bool o2_start_moving = false;
 bool player_wall1_move = true;
-int timer_1 = 1;
 int timer_2 = 1;
 bool timer_start;
 bool timer_start2;
@@ -18,29 +17,39 @@ bool duplicate_done = false;
 bool no_o_collision = false;
 
 bool i = true;
+
+sf::Texture player_texture;
+sf::Texture background_texture;
+sf::Font font;
+
+void load_textures() {
+    if (!player_texture.loadFromFile("../images/player_white.png")) {
+        std::cout << "error loading player image\n";
+    }
+
+    // game background texture
+
+
+    if (!background_texture.loadFromFile("../images/gamebackground1t.png")) {
+        std::cout << "error loading background image\n";
+    }
+
+    // font
+
+    if (!font.loadFromFile("../fonts/arial.ttf")) {
+        std::cout << "error loading font\n";
+    }
+}
+
 int main() {
     
     // textures
 
     // player texture
 
-    sf::Texture player_texture;
-    if (!player_texture.loadFromFile("../images/player_white.png")) {
-        std::cout << "error loading player image\n";
-    }
 
-    // game background texture
-    
-    sf::Texture background_texture;
-    if (!background_texture.loadFromFile("../images/gamebackground1t.png")) {
-        std::cout << "error loading background image\n";
-    }
 
-    // font
-    sf::Font font;
-    if (!font.loadFromFile("../fonts/arial.ttf")) {
-        std::cout << "error loading font\n";
-    }
+    load_textures();
 
     // random
     
@@ -134,7 +143,7 @@ int main() {
                 y = 240;
                 executed_1 = false;
                 intersected1 = false;
-                intersected2 = false;
+                o2_start_moving = false;
                 obstacle.setPosition(x2, y2);
                 player.setPosition(x, y); 
                 b = 0;
@@ -149,7 +158,6 @@ int main() {
                     if (x2 <= 100 || x2 >= 540)
                         break;
                 }
-                timer_1 = 1;
                 timer_2 = 1;
                 obstacle2.setPosition(-40, -40);
                 timer_start2 = false;      
@@ -191,7 +199,7 @@ int main() {
 
         // obstacle moving 
         
-            if (intersected2 == false) {
+            if (o2_start_moving == false) {
                 
                 if (randomside == 1)
                     obstacle.move(obstacle_x, obstacle_y);
@@ -461,9 +469,6 @@ int main() {
             std::cout  << "obstacle global bounds top: " << obstacle.getGlobalBounds().top << std::endl;
 
         }
-        
-        if (timer_start)
-            timer_1++;
 
         if (timer_start2)
             timer_2++;
@@ -471,12 +476,6 @@ int main() {
         // wall move timer
 
         //std::cout << timer_2 << std::endl;
-        
-        if (b >= 2 && timer_1 >= 30) {
-            
-            //wall1.move();
-            //wall2.setPosition(0, -100);   
-        }
         
         // duplicate obstacle
         
@@ -486,14 +485,14 @@ int main() {
             obstacle_y = 5;
             obstacle2_x = obstacle_x;
             obstacle2_y = obstacle_y;
-            intersected2 = true;
+            o2_start_moving = true;
             //new_obstacle2 = true;
             timer_start2 = true;
         
 
         if (timer_2 >= 60) {
             new_obstacle2 = true;
-            intersected2 = false;
+            o2_start_moving = false;
             duplicate_done = true;
             //std::cout << "reached 60, start moving" << std::endl;  
         }
