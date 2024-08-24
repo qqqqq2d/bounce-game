@@ -1,0 +1,14 @@
+[
+  {
+    "arguments": [
+      "/usr/bin/g++",
+      "-c",
+      "-o",
+      "prog",
+      "main.cpp"
+    ],
+    "directory": "/home/mattias/prog/c++/game_sfml",
+    "file": "/home/mattias/prog/c++/game_sfml/main.cpp",
+    "output": "/home/mattias/prog/c++/game_sfml/prog"
+  }
+]
