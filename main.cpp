@@ -25,20 +25,20 @@ int main() {
     // player texture
 
     sf::Texture player_texture;
-    if (!player_texture.loadFromFile("./images/player_white.png")) {
+    if (!player_texture.loadFromFile("../images/player_white.png")) {
         std::cout << "error loading player image\n";
     }
 
     // game background texture
     
     sf::Texture background_texture;
-    if (!background_texture.loadFromFile("./images/gamebackground1t.png")) {
+    if (!background_texture.loadFromFile("../images/gamebackground1t.png")) {
         std::cout << "error loading background image\n";
     }
 
     // font
     sf::Font font;
-    if (!font.loadFromFile("./fonts/arial.ttf")) {
+    if (!font.loadFromFile("../fonts/arial.ttf")) {
         std::cout << "error loading font\n";
     }
 
