@@ -27,15 +27,18 @@ sf::Texture menu_button1_texture;
 sf::Texture menu_button2_texture;
 sf::Texture menu_button1_texture_other;
 sf::Texture menu_button2_texture_other;
-sf::Font font;
+sf::Font arial_font;
+sf::Font bitmap_font;
 
 void load_textures() {
     if (!player_texture.loadFromFile("../images/player_white.png"))
         std::cout << "error loading player image\n";
     if (!background_texture.loadFromFile("../images/game_background.png"))
         std::cout << "error loading background image\n";
-    if (!font.loadFromFile("../fonts/arial.ttf"))
+    if (!arial_font.loadFromFile("../fonts/arial.ttf"))
         std::cout << "error loading font\n";
+    if (!bitmap_font.loadFromFile("../fonts/Pixeled.ttf"))
+        std::cout << "error loading bitmap font\n";
     if (!menu_texture.loadFromFile("../images/game_menu2.png"))
         std::cout << "error loading game menu image\n";
     if (!menu_button1_texture.loadFromFile("../images/menu_button_play.png"))
@@ -122,7 +125,7 @@ int main() {
     // again text
 
     sf::Text again_text;
-    again_text.setFont(font);
+    again_text.setFont(arial_font);
     again_text.setString("Press N");
     again_text.setCharacterSize(24);
     again_text.setFillColor(sf::Color::White);
@@ -132,12 +135,13 @@ int main() {
     // bounce counter
 
 
-    std::string counter_text = "Counter: ";
+    std::string counter_text = "COUNTER: ";
     //std::string str = std::to_string(b);
     sf::Text bcounter_text;
-    bcounter_text.setFont(font);
+    bcounter_text.setFont(bitmap_font);
     //
-    bcounter_text.setCharacterSize(24);
+    bcounter_text.setPosition(0, 10);
+    bcounter_text.setCharacterSize(16);
     bcounter_text.setFillColor(sf::Color::White);
 
     // menu
@@ -153,7 +157,7 @@ int main() {
     //     menu_button1.setTexture(menu_button1_texture);
     // else
     //     menu_button1.setTexture(menu_button1_texture_other);
-    menu_button1.setPosition(0, 160);
+    menu_button1.setPosition(0, 220);
     menu_button1.setScale(sf::Vector2f(8, 8));
 
     // button 2
