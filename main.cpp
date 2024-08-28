@@ -18,24 +18,35 @@ bool no_o_collision = false;
 bool game_start = false;
 bool i = true;
 
+int selected_menu_item = 1;
+
 sf::Texture player_texture;
 sf::Texture background_texture;
 sf::Texture menu_texture;
+sf::Texture menu_button1_texture;
+sf::Texture menu_button2_texture;
+sf::Texture menu_button1_texture_other;
+sf::Texture menu_button2_texture_other;
 sf::Font font;
 
 void load_textures() {
-    if (!player_texture.loadFromFile("../images/player_white.png")) {
+    if (!player_texture.loadFromFile("../images/player_white.png"))
         std::cout << "error loading player image\n";
-    }
-    if (!background_texture.loadFromFile("../images/game_background.png")) {
+    if (!background_texture.loadFromFile("../images/game_background.png"))
         std::cout << "error loading background image\n";
-    }
-
-    if (!font.loadFromFile("../fonts/arial.ttf")) {
+    if (!font.loadFromFile("../fonts/arial.ttf"))
         std::cout << "error loading font\n";
-    }
     if (!menu_texture.loadFromFile("../images/game_menu2.png"))
         std::cout << "error loading game menu image\n";
+    if (!menu_button1_texture.loadFromFile("../images/menu_button_play.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button2_texture.loadFromFile("../images/menu_button_quit.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button1_texture_other.loadFromFile("../images/menu_button_play_deselected.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button2_texture_other.loadFromFile("../images/menu_button_quit_deselected.png"))
+        std::cout << "error loading menu image\n";
+
 }
 
 int main() {
@@ -137,18 +148,31 @@ int main() {
 
     // button 1
 
-    sf::RectangleShape menu_button1(sf::Vector2f(640.0f, 80.0f));
-    menu_button1.setPosition(0, 80);
-    menu_button1.setFillColor(sf::Color::Black);
+    sf::Sprite menu_button1;
+    // if (selected_menu_item == 1)
+    //     menu_button1.setTexture(menu_button1_texture);
+    // else
+    //     menu_button1.setTexture(menu_button1_texture_other);
+    menu_button1.setPosition(0, 160);
+    menu_button1.setScale(sf::Vector2f(8, 8));
+
+    // button 2
+    sf::Sprite menu_button2;
+    // if (selected_menu_item == 2)
+    //     menu_button2.setTexture(menu_button2_texture);
+    // else
+    //     menu_button2.setTexture(menu_button2_texture_other);
+    menu_button2.setPosition(0, 320);
+    menu_button2.setScale(sf::Vector2f(8, 8));
 
     // button 1 text
 
-    sf::Text button1_text;
-    button1_text.setFont(font);
-    button1_text.setString("PLAY");
-    button1_text.setCharacterSize(40);
-    button1_text.setPosition(260, 95);
-    button1_text.setFillColor(sf::Color::White);
+    // sf::Text button1_text;
+    // button1_text.setFont(font);
+    // button1_text.setString("PLAY");
+    // button1_text.setCharacterSize(40);
+    // button1_text.setPosition(260, 95);
+    // button1_text.setFillColor(sf::Color::White);
 
     // game background sprite
     
@@ -168,9 +192,15 @@ int main() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 window.close();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return))
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 1)
                 game_start = true;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 2)
+                window.close();
 
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
+                selected_menu_item = 2;
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+                selected_menu_item = 1;
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::N) && intersected1 == true) {
                 x = 320;
@@ -201,10 +231,22 @@ int main() {
 
         }
 
-        // update bounce counter stringqq
+        // update bounce counter string
 
         std::string str = std::to_string(b);
         bcounter_text.setString(counter_text + str);
+
+        // update menu button textures
+        if (selected_menu_item == 1)
+            menu_button1.setTexture(menu_button1_texture);
+        else
+            menu_button1.setTexture(menu_button1_texture_other);
+
+        if (selected_menu_item == 2)
+            menu_button2.setTexture(menu_button2_texture);
+        else
+            menu_button2.setTexture(menu_button2_texture_other);
+
 
         // print out player position
 
@@ -539,7 +581,7 @@ int main() {
         if (game_start == false) {
             window.draw(menu);
             window.draw(menu_button1);
-            window.draw(button1_text);
+            window.draw(menu_button2);
         }
 
         window.display();
