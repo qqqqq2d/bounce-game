@@ -10,13 +10,15 @@ bool intersected1 = false;
 bool o2_start_moving = false;
 bool player_wall1_move = true;
 int timer_2 = 1;
-bool timer_start;
 bool timer_start2;
+int timer_3 = 1;
+bool timer_start3;
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
 bool game_start = false;
 bool i = true;
+bool wall1_move_done = false;
 
 int selected_menu_item = 1;
 
@@ -30,14 +32,16 @@ sf::Texture menu_button2_texture_other;
 sf::Font arial_font;
 sf::Font bitmap_font;
 
+
+
 void load_textures() {
     if (!player_texture.loadFromFile("../images/player_white.png"))
         std::cout << "error loading player image\n";
     if (!background_texture.loadFromFile("../images/game_background.png"))
         std::cout << "error loading background image\n";
-    if (!arial_font.loadFromFile("../fonts/arial.ttf"))
+    if (!arial_font.loadFromFile("../fonts/PixelOperator8.ttf"))
         std::cout << "error loading font\n";
-    if (!bitmap_font.loadFromFile("../fonts/Pixeled.ttf"))
+    if (!bitmap_font.loadFromFile("../fonts/PixelOperator8.ttf"))
         std::cout << "error loading bitmap font\n";
     if (!menu_texture.loadFromFile("../images/game_menu2.png"))
         std::cout << "error loading game menu image\n";
@@ -50,6 +54,31 @@ void load_textures() {
     if (!menu_button2_texture_other.loadFromFile("../images/menu_button_quit_deselected.png"))
         std::cout << "error loading menu image\n";
 
+}
+
+//wall_y = 480..300
+//470..460 2
+//459..410 3
+//410..371 4
+//370..331 3
+//320..310 2
+int get_wall_step(const float wall_y) {
+    if(wall_y <= 470 && wall_y >= 460) {
+        return  2;
+    }
+    if(wall_y <= 45q9 && wall_y >= 410) {
+        return  3;
+    }
+    if(wall_y <= 410 && wall_y >= 371) {
+        return  4;
+    }
+    if(wall_y <= 370 && wall_y >= 321) {
+        return  3;
+    }
+    if(wall_y <= 320 && wall_y >= 310) {
+        return  2;
+    }
+    return 1;
 }
 
 int main() {
@@ -111,10 +140,10 @@ int main() {
     // game walls
     
     // wall 1
-    sf::RectangleShape wall1(sf::Vector2f(640.0f, 400.0f));
+    sf::RectangleShape wall1(sf::Vector2f(640.0f, 40.0f));
     wall1.setOrigin(0, 0);
-    wall1.setPosition(0, 520); // + 40
-    wall1.setFillColor(sf::Color(255, 0, 0));
+    wall1.setPosition(0, 480); // + 40
+    wall1.setFillColor(sf::Color(255, 0, 0, 100));
 
     // wall 2
     sf::RectangleShape wall2(sf::Vector2f(640.0f, 200.0f));
@@ -122,15 +151,16 @@ int main() {
     wall2.setPosition(0, -240);
     wall2.setFillColor(sf::Color(255, 0, 0));
 
+
     // again text
 
     sf::Text again_text;
     again_text.setFont(arial_font);
-    again_text.setString("Press N");
-    again_text.setCharacterSize(24);
+    again_text.setString("PRESS N TO RESTART");
+    again_text.setCharacterSize(20);
     again_text.setFillColor(sf::Color::White);
     again_text.setOrigin(0,0);
-    again_text.setPosition(280, 0);
+    again_text.setPosition(0, 459);
 
     // bounce counter
 
@@ -140,8 +170,8 @@ int main() {
     sf::Text bcounter_text;
     bcounter_text.setFont(bitmap_font);
     //
-    bcounter_text.setPosition(0, 10);
-    bcounter_text.setCharacterSize(16);
+    bcounter_text.setPosition(0, 0);
+    bcounter_text.setCharacterSize(20);
     bcounter_text.setFillColor(sf::Color::White);
 
     // menu
@@ -264,18 +294,18 @@ int main() {
 
                 // player movement
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && (player_position.y >= 0 + player.getOrigin().y + playerspeed) && player_position.y >= wall2.getGlobalBounds().top+200+13) //31
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && (player_position.y >= 0 + player.getOrigin().y + playerspeed)) //31
                     player.move(0, -playerspeed);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && (player_position.y <= 460 + player.getOrigin().y - playerspeed) && player_position.y <= wall1.getGlobalBounds().top-13)
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && (player_position.y <= 460 + player.getOrigin().y - playerspeed))
                     player.move(0, playerspeed);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) &&(player_position.x >= 0 + player.getOrigin().x + playerspeed))
                     player.move(-playerspeed, 0);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (player_position.x <= 620 + player.getOrigin().x - playerspeed))
                     player.move(playerspeed, 0);
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (player_position.y >= 0 + player.getOrigin().y + playerspeed) && player_position.y >= wall2.getGlobalBounds().top+31)
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (player_position.y >= 0 + player.getOrigin().y + playerspeed))
                     player.move(0, -playerspeed);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (player_position.y <= 460 + player.getOrigin().y - playerspeed) && player_position.y <= wall1.getGlobalBounds().top-15)
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (player_position.y <= 460 + player.getOrigin().y - playerspeed))
                     player.move(0, playerspeed);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&(player_position.x >= 0 + player.getOrigin().x + playerspeed))
                     player.move(-playerspeed, 0);
@@ -308,7 +338,7 @@ int main() {
                 if (obstacle.getPosition().y > 460) {
                     obstacle_y = -obstacle_y;
                     b++;
-                    timer_start = true;
+                    //timer_start = true;
                 }
                 if (obstacle.getPosition().x > 620) {
                     obstacle_x = -obstacle_x;
@@ -317,7 +347,7 @@ int main() {
                 if (obstacle.getPosition().y < 0 + obstacle.getOrigin().y) {
                     obstacle_y = -obstacle_y;
                     b++;
-                    timer_start = true;
+                    //timer_start = true;
                 }
                 if (obstacle.getPosition().x < 0 + obstacle.getOrigin().x) {
                     obstacle_x = -obstacle_x;
@@ -331,7 +361,7 @@ int main() {
                     if (obstacle2.getPosition().y > 460) {
                         obstacle2_y = -obstacle2_y;
                         b++;
-                        timer_start = true;
+                        //timer_start = true;
                     }
                     if (obstacle2.getPosition().x > 620) {
                         obstacle2_x = -obstacle2_x;
@@ -340,7 +370,7 @@ int main() {
                     if (obstacle2.getPosition().y < 0 + obstacle2.getOrigin().y) {
                         obstacle2_y = -obstacle2_y;
                         b++;
-                        timer_start = true;
+                        //timer_start = true;
                     }
                     if (obstacle2.getPosition().x < 0 + obstacle2.getOrigin().x) {
                         obstacle2_x = -obstacle2_x;
@@ -365,9 +395,10 @@ int main() {
             //std::cout << "wall 2: " << wall2.getGlobalBounds().top << std::endl;
             //std::cout << "b counter: " << b << std::endl;
 
+
             // increase obstacle speed
 
-            if (prev_b!=b && b%10==0 && b!=0) {
+            if (prev_b!=b && b%10==0 && b!=0 && b<80) {
                 std::cout << "speed increased" << std::endl;
 
                 // obstacle
@@ -464,30 +495,10 @@ int main() {
 
             sf::FloatRect wall1_box = wall1.getGlobalBounds();
 
-            if (obstacle_box.intersects(wall1_box)) {
-                obstacle.setPosition(obstacle.getPosition().x, obstacle.getPosition().y-3);
-                obstacle_y = -obstacle_y;
-            }
-
-            // check collision with obstacle and wall2
-
-            sf::FloatRect wall2_box = wall2.getGlobalBounds();
-
-            if (obstacle_box.intersects(wall2_box)) {
-                obstacle.setPosition(obstacle.getPosition().x, obstacle.getPosition().y+3);
-                obstacle_y = -obstacle_y;
-            }
-
             // check collision with player and wall1
 
             if (player_box.intersects(wall1_box)) {
-                player.move(player_position.x-player_position.x, -10);
-            }
-
-            // check collision with player and wall1
-
-            if (player_box.intersects(wall2_box)) {
-                player.move(player_position.x-player_position.x, 10);
+                intersected1 = true;
             }
 
             // check collision with obstacle1 and obstacle2
@@ -538,16 +549,40 @@ int main() {
             if (timer_start2)
                 timer_2++;
 
+            if (timer_start3)
+                timer_3++;
+
             // wall move timer
 
             //std::cout << timer_2 << std::endl;
+
+            if (b >= 1 && !wall1_move_done) {
+                const auto wall_y = wall1.getPosition().y;
+                if (wall_y > 300) {
+                    const auto wall_step = get_wall_step(wall_y);
+                    std::cout << "wall y: " << wall_y << "wall step" << wall_step << std::endl;
+                    wall1.move(0, -wall_step);
+                }
+                //wall1_move_done = true;
+
+
+                //wall1_move_done = true;
+
+            }
 
             // duplicate obstacle
 
             if (b >= 30 && obstacle.getPosition().x > 290 && obstacle.getPosition().x < 350 && obstacle.getPosition().y > 210 && obstacle.getPosition().y < 270 && duplicate_done == false) {
                 obstacle2.setPosition(obstacle.getPosition());
-                obstacle_x = 5;
-                obstacle_y = 5;
+                if (randomside == 1) {
+                    obstacle_x = 5;
+                    obstacle_y = 5;
+                }
+                else {
+                    obstacle_x = -5;
+                    obstacle_y = -5;
+                }
+
                 obstacle2_x = obstacle_x;
                 obstacle2_y = obstacle_y;
                 o2_start_moving = true;
@@ -576,7 +611,7 @@ int main() {
         window.draw(player);
         window.draw(obstacle);
         window.draw(wall1);
-        window.draw(wall2);
+        //window.draw(wall2);
         if (new_obstacle2 == true)
             window.draw(obstacle2);
         if (intersected1 == true)
