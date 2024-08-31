@@ -18,7 +18,7 @@ bool duplicate_done = false;
 bool no_o_collision = false;
 bool game_start = false;
 bool i = true;
-bool wall1_move_done = false;
+bool wall_move_done = false;
 
 int selected_menu_item = 1;
 
@@ -56,26 +56,34 @@ void load_textures() {
 
 }
 
-//wall_y = 480..300
+//wall_y = 480..400
 //470..460 2
 //459..410 3
 //410..371 4
 //370..331 3
 //320..310 2
+
+//20
+//10
+//7.5
+//5
+//7.5
+//10
+//20
 int get_wall_step(const float wall_y) {
-    if(wall_y <= 470 && wall_y >= 460) {
+    if(wall_y <= 460 && wall_y >= 450) {
         return  2;
     }
-    if(wall_y <= 45q9 && wall_y >= 410) {
+    if(wall_y <= 449 && wall_y >= 444) {
         return  3;
     }
-    if(wall_y <= 410 && wall_y >= 371) {
+    if(wall_y <= 443 && wall_y >= 440) {
         return  4;
     }
-    if(wall_y <= 370 && wall_y >= 321) {
+    if(wall_y <= 439 && wall_y >= 431) {
         return  3;
     }
-    if(wall_y <= 320 && wall_y >= 310) {
+    if(wall_y <= 430 && wall_y >= 411) {
         return  2;
     }
     return 1;
@@ -140,17 +148,16 @@ int main() {
     // game walls
     
     // wall 1
-    sf::RectangleShape wall1(sf::Vector2f(640.0f, 40.0f));
+    sf::RectangleShape wall1(sf::Vector2f(640.0f, 20.0f));
     wall1.setOrigin(0, 0);
     wall1.setPosition(0, 480); // + 40
     wall1.setFillColor(sf::Color(255, 0, 0, 100));
 
     // wall 2
-    sf::RectangleShape wall2(sf::Vector2f(640.0f, 200.0f));
+    sf::RectangleShape wall2(sf::Vector2f(640.0f, 20.0f));
     wall2.setOrigin(0,0);
-    wall2.setPosition(0, -240);
-    wall2.setFillColor(sf::Color(255, 0, 0));
-
+    wall2.setPosition(0, -20);
+    wall2.setFillColor(sf::Color(255, 0, 0, 100));
 
     // again text
 
@@ -246,7 +253,8 @@ int main() {
                 player.setPosition(x, y); 
                 b = 0;
                 obstacle_x = 5, obstacle_y = 5;
-                //wall1.setPosition(0, 500);
+                wall1.setPosition(0, 480);
+                wall2.setPosition(0, -20);
                 new_obstacle2 = false;
                 duplicate_done = false;
                 randomside = dist2(gen); 
@@ -257,8 +265,12 @@ int main() {
                         break;
                 }
                 timer_2 = 1;
+                timer_3 = 1;
                 obstacle2.setPosition(-40, -40);
-                timer_start2 = false;      
+                timer_start2 = false;
+                timer_start3 = false;
+                wall_move_done = false;
+
 
                 //std::cout << "x:" << x << "y:" << y << "x2: " << x2 << "y2: " << y2 << std::endl;
             }
@@ -461,7 +473,6 @@ int main() {
                     //obstacle_y--;
                 }
 
-
                 executed_1 = true;
                 prev_b = b;
 
@@ -494,10 +505,11 @@ int main() {
             // check collision with obstacle and wall1
 
             sf::FloatRect wall1_box = wall1.getGlobalBounds();
+            sf::FloatRect wall2_box = wall2.getGlobalBounds();
 
-            // check collision with player and wall1
+            // check collision with player and walls
 
-            if (player_box.intersects(wall1_box)) {
+            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>20) {
                 intersected1 = true;
             }
 
@@ -549,26 +561,58 @@ int main() {
             if (timer_start2)
                 timer_2++;
 
-            if (timer_start3)
+            if (timer_start3 && b < 20)
                 timer_3++;
 
             // wall move timer
 
-            //std::cout << timer_2 << std::endl;
+            //std::cout << timer_3 << std::endl;
 
-            if (b >= 1 && !wall1_move_done) {
-                const auto wall_y = wall1.getPosition().y;
-                if (wall_y > 300) {
-                    const auto wall_step = get_wall_step(wall_y);
-                    std::cout << "wall y: " << wall_y << "wall step" << wall_step << std::endl;
-                    wall1.move(0, -wall_step);
+            // wall danger indicator
+
+            if (b >= 16 && !wall_move_done) {
+                timer_start3 = true;
+                wall1.setPosition(0, 400);
+                wall2.setPosition(0, 60);
+
+                if (timer_3 >= 30) {
+                    std::cout << "move walls" << std::endl;
+                    wall1.setPosition(0, 480);
+                    wall2.setPosition(0, -20);
+                    //wall_move_done = true;
                 }
-                //wall1_move_done = true;
-
-
-                //wall1_move_done = true;
-
+                if (timer_3 >= 60) {
+                    wall1.setPosition(0, 400);
+                    wall2.setPosition(0, 60);
+                }
+                if (timer_3 >= 90) {
+                    wall1.setPosition(0, 480);
+                    wall2.setPosition(0, -20);
+                }
+                if (timer_3 >= 120) {
+                    wall_move_done = true;
+                }
             }
+
+            if (b >= 20) {
+                const auto wall1_y = wall1.getPosition().y;
+                const auto wall2_y = wall2.getPosition().y;
+
+                if (wall1_y > 400 && wall2_y < 60) {
+                    const auto wall1_step = get_wall_step(wall1_y);
+                    std::cout << "wall step" << -wall1_step << std::endl;
+                    wall1.move(0, -wall1_step);
+                    wall2.move(0, wall1_step);
+                }
+                if (wall2_y < 60) {
+                    //wall1.move(0, wall1_step);
+                }
+
+                //wall1_move_done = true;
+                //wall1_move_done = true;
+            }
+
+
 
             // duplicate obstacle
 
@@ -611,7 +655,7 @@ int main() {
         window.draw(player);
         window.draw(obstacle);
         window.draw(wall1);
-        //window.draw(wall2);
+        window.draw(wall2);
         if (new_obstacle2 == true)
             window.draw(obstacle2);
         if (intersected1 == true)
