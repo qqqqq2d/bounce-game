@@ -17,4 +17,6 @@ find_package(SFML 2.6.1 COMPONENTS graphics window system REQUIRED)
 target_link_libraries(prog sfml-graphics sfml-window sfml-system)
 
 # Add compile options for strict ISO C++ and warnings
+if (NOT MSVC)
 target_compile_options(prog PRIVATE -Wall -Wextra -pedantic)
+endif ()
