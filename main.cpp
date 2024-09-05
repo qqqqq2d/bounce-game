@@ -36,7 +36,6 @@ sf::Font arial_font;
 sf::Font bitmap_font;
 
 
-
 void load_textures() {
     if (!player_texture.loadFromFile("../images/player_white.png"))
         std::cout << "error loading player image\n";
@@ -128,9 +127,12 @@ int main() {
     float obstacle2_x = obstacle_x;
     float obstacle2_y = obstacle_y;
 
+    int window_x = 640;
+    int window_y = 480;
+
     // create window 
     //sf::RenderWindow window(sf::VideoMode(640, 480),"My window", sf::Style::Close);
-    sf::RenderWindow window(sf::VideoMode(640, 480),"My window", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(window_x, window_y),"My window", sf::Style::Titlebar | sf::Style::Close);
     window.setPosition(sf::Vector2i(50, 50));
     window.setFramerateLimit(60);
 
@@ -169,7 +171,7 @@ int main() {
     // again text
 
     sf::Text again_text;
-    again_text.setFont(arial_font);
+    again_text.setFont(bitmap_font);
     again_text.setString("PRESS N TO RESTART");
     again_text.setCharacterSize(20);
     again_text.setFillColor(sf::Color::White);
@@ -183,6 +185,7 @@ int main() {
     //std::string str = std::to_string(b);
     sf::Text bcounter_text;
     bcounter_text.setFont(bitmap_font);
+
     //
     bcounter_text.setPosition(0, 0);
     bcounter_text.setCharacterSize(20);
@@ -255,12 +258,14 @@ int main() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 2) {
                 menu_screen2 = true;
             }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && menu_screen2 == true) {
-                window.setSize(sf::Vector2u(1280, 960));
-            }
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && menu_screen2 == true) {
-                window.setSize(sf::Vector2u(640, 480));
-            }
+            // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && menu_screen2 == true) {
+            //
+            //     window.setSize(sf::Vector2u(window_x++, window_y++));
+            // }
+
+            // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && menu_screen2 == true) {
+            //     window.setSize(sf::Vector2u(window_x--, window_y--));
+            // }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 3)
                 window.close();
@@ -273,6 +278,10 @@ int main() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
                 menu_screen2 = false;
             }
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && menu_screen2)
+                std::cout << "window size: " << window.getSize().x << ", " << window.getSize().y << std::endl;
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::N) && intersected1 == true) {
                 x = 320;
                 y = 240;
@@ -337,6 +346,14 @@ int main() {
 
         sf::Vector2f player_position(player.getPosition());
         //std::cout << player_position.x << ", " << player_position.y << std::endl;
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && menu_screen2 == true) {
+            window.setSize(sf::Vector2u(window_x = window_x+4, window_y = window_y+4));
+        }
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && menu_screen2 == true) {
+            window.setSize(sf::Vector2u(window_x = window_x-4, window_y = window_y-4));
+        }
 
 
         if (game_start == true) {
@@ -548,7 +565,7 @@ int main() {
 
             // check collision with player and walls
 
-            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>20) {
+            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>18) {
                 intersected1 = true;
             }
 
