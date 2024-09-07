@@ -25,6 +25,7 @@ bool menu_screen2 = false;
 int selected_menu_item = 1;
 int lowest_selected = 1;
 int highest_selected = 3;
+float wall_alpha = 50;
 
 bool button_toggle = false;
 
@@ -47,6 +48,9 @@ sf::Texture menu_button4_texture_diff;
 sf::Texture menu_button_blank_texture;
 sf::Texture menu_button_blank_texture_diff;
 sf::Texture menu_button_blank_texture_on;
+sf::Texture menu_button_2players_texture;
+sf::Texture menu_button_2players_texture_on;
+sf::Texture menu_button_2players_texture_diff;
 
 sf::Font arial_font;
 sf::Font bitmap_font;
@@ -85,6 +89,12 @@ void load_textures() {
         std::cout << "error loading menu image\n";
     if (!menu_button_blank_texture_on.loadFromFile("../images/menu_button_blank_on.png"))
         std::cout << "error loading menu image\n";
+    if (!menu_button_2players_texture.loadFromFile("../images/menu_button_2players.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button_2players_texture_on.loadFromFile("../images/menu_button_2players_on.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button_2players_texture_diff.loadFromFile("../images/menu_button_2players_deselected.png"))
+        std::cout << "error loading menu image\n";
 
 }
 
@@ -120,6 +130,12 @@ int get_wall_step(const float wall_y) {
     }
     return 1;
 }
+
+// void fade_alpha() {
+//     for (int l = 1; l < 50; l++) {
+//         wall_alpha = wall_alpha-0.1;
+//     }
+// }
 
 int main() {
 
@@ -195,13 +211,13 @@ int main() {
     sf::RectangleShape wall1(sf::Vector2f(640.0f, 20.0f));
     wall1.setOrigin(0, 0);
     wall1.setPosition(0, 480); // + 40
-    wall1.setFillColor(sf::Color(255, 0, 0, 100));
+    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha));
 
     // wall 2
     sf::RectangleShape wall2(sf::Vector2f(640.0f, 20.0f));
     wall2.setOrigin(0,0);
     wall2.setPosition(0, -20);
-    wall2.setFillColor(sf::Color(255, 0, 0, 100));
+    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha));
 
     // again text
 
@@ -425,16 +441,13 @@ int main() {
             menu_button4.setTexture(menu_button_blank_texture_diff);
         }
         if (selected_menu_item == 5) {
-            menu_button5.setTexture(menu_button_blank_texture);
+            menu_button5.setTexture(menu_button_2players_texture);
         }
         else {
-            menu_button5.setTexture(menu_button_blank_texture_diff);
+            menu_button5.setTexture(menu_button_2players_texture_diff);
         }
-
-
-
         if (button_toggle) {
-            menu_button5.setTexture(menu_button_blank_texture_on);
+            menu_button5.setTexture(menu_button_2players_texture_on);
         }
 
         // print out player position
@@ -456,6 +469,40 @@ int main() {
         if (game_start == true) {
 
             if (intersected1 == false) {
+
+                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+                    game_start = false;
+                    x = 320;
+                    y = 240;
+                    executed_1 = false;
+                    intersected1 = false;
+                    o2_start_moving = false;
+                    obstacle.setPosition(x2, y2);
+                    player.setPosition(x, y);
+                    b = 0;
+                    obstacle_x = 5, obstacle_y = 5;
+                    wall1.setPosition(0, 480);
+                    wall2.setPosition(0, -20);
+                    new_obstacle2 = false;
+                    duplicate_done = false;
+                    randomside = dist2(gen);
+                    while (true) {
+                        x2 = dist(gen);
+                        y2 = dist1(gen);
+                        if (x2 <= 100 || x2 >= 540)
+                            break;
+                    }
+                    timer_2 = 1;
+                    timer_3 = 1;
+                    obstacle2.setPosition(-40, -40);
+                    timer_start2 = false;
+                    timer_start3 = false;
+                    wall_move_done = false;
+                    player2.setPosition(320, 300);
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+                        //game_start = false;
+                    }
+                }
 
                 // player movement
 
@@ -559,7 +606,7 @@ int main() {
             //std::cout << "player y position: " << player.getPosition().y << std::endl;
             //std::cout << "wall 2: " << wall2.getGlobalBounds().top << std::endl;
             //std::cout << "b counter: " << b << std::endl;
-
+            std::cout << "wall alpha: " << wall_alpha << std::endl;
 
 
             // increase obstacle speed
@@ -631,7 +678,6 @@ int main() {
                 prev_b = b;
 
             }
-
 
             // check collision with player and obstacle
 
@@ -747,6 +793,7 @@ int main() {
 
             //std::cout << timer_3 << std::endl;
 
+
             // wall danger indicator
 
             if (b >= 17 && !wall_move_done) {
@@ -786,14 +833,17 @@ int main() {
                 if (wall2_y < 60) {
                     //wall1.move(0, wall1_step);
                 }
+                if (b >= 40 && wall_alpha > 0) {
+                    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
+                    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
+                    std::cout << "fading walls" << std::endl;
 
-                //wall1_move_done = true;
-                //wall1_move_done = true;
+                }
             }
 
             // duplicate obstacle
 
-            if (b >= 30 && obstacle.getPosition().x > 290 && obstacle.getPosition().x < 350 && obstacle.getPosition().y > 210 && obstacle.getPosition().y < 270 && duplicate_done == false) {
+            if (b >= 50 && obstacle.getPosition().x > 290 && obstacle.getPosition().x < 350 && obstacle.getPosition().y > 210 && obstacle.getPosition().y < 270 && duplicate_done == false) {
                 obstacle2.setPosition(obstacle.getPosition());
                 if (randomside == 1) {
                     obstacle_x = 5;
