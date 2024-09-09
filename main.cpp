@@ -26,6 +26,9 @@ int selected_menu_item = 1;
 int lowest_selected = 1;
 int highest_selected = 3;
 float wall_alpha = 50;
+float wall_alpha_test = 50;
+int b_a = 20;
+bool add_b_a = false;
 
 bool button_toggle = false;
 
@@ -54,7 +57,6 @@ sf::Texture menu_button_2players_texture_diff;
 
 sf::Font arial_font;
 sf::Font bitmap_font;
-
 
 void load_textures() {
     if (!player_texture.loadFromFile("../images/player_white.png"))
@@ -211,13 +213,13 @@ int main() {
     sf::RectangleShape wall1(sf::Vector2f(640.0f, 20.0f));
     wall1.setOrigin(0, 0);
     wall1.setPosition(0, 480); // + 40
-    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha));
+    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha)); // wall_alpha
 
     // wall 2
     sf::RectangleShape wall2(sf::Vector2f(640.0f, 20.0f));
     wall2.setOrigin(0,0);
     wall2.setPosition(0, -20);
-    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha));
+    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha)); // wall_alpha
 
     // again text
 
@@ -288,6 +290,36 @@ int main() {
     sf::Sprite menu_button5;
     menu_button5.setPosition(0, 220);
     menu_button5.setScale(sf::Vector2f(8, 8));
+
+    /*void default_settings() {
+        x = 320;
+        y = 240;
+        executed_1 = false;
+        intersected1 = false;
+        o2_start_moving = false;
+        obstacle.setPosition(x2, y2);
+        player.setPosition(x, y);
+        b = 0;
+        obstacle_x = 5, obstacle_y = 5;
+        wall1.setPosition(0, 480);
+        wall2.setPosition(0, -20);
+        new_obstacle2 = false;
+        duplicate_done = false;
+        randomside = dist2(gen);
+        while (true) {
+            x2 = dist(gen);
+            y2 = dist1(gen);
+            if (x2 <= 100 || x2 >= 540)
+                break;
+        }
+        timer_2 = 1;
+        timer_3 = 1;
+        obstacle2.setPosition(-40, -40);
+        timer_start2 = false;
+        timer_start3 = false;
+        wall_move_done = false;
+        player2.setPosition(320, 300);
+    }*/
 
     sf::Sprite game_background;
     game_background.setTexture(background_texture);
@@ -371,6 +403,9 @@ int main() {
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && menu_screen2)
                 std::cout << "window size: " << window.getSize().x << ", " << window.getSize().y << std::endl;
 
+
+            // restart game
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::N) && intersected1 == true) {
                 x = 320;
                 y = 240;
@@ -378,17 +413,17 @@ int main() {
                 intersected1 = false;
                 o2_start_moving = false;
                 obstacle.setPosition(x2, y2);
-                player.setPosition(x, y); 
+                player.setPosition(x, y);
                 b = 0;
                 obstacle_x = 5, obstacle_y = 5;
                 wall1.setPosition(0, 480);
                 wall2.setPosition(0, -20);
                 new_obstacle2 = false;
                 duplicate_done = false;
-                randomside = dist2(gen); 
-                while (true) {    
-                x2 = dist(gen);
-                y2 = dist1(gen);
+                randomside = dist2(gen);
+                while (true) {
+                    x2 = dist(gen);
+                    y2 = dist1(gen);
                     if (x2 <= 100 || x2 >= 540)
                         break;
                 }
@@ -399,9 +434,7 @@ int main() {
                 timer_start3 = false;
                 wall_move_done = false;
                 player2.setPosition(320, 300);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-                    //game_start = false;
-                }
+                b_a = 20;
 
 
                 //std::cout << "x:" << x << "y:" << y << "x2: " << x2 << "y2: " << y2 << std::endl;
@@ -470,6 +503,8 @@ int main() {
 
             if (intersected1 == false) {
 
+                // return to menu
+
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
                     game_start = false;
                     x = 320;
@@ -499,9 +534,7 @@ int main() {
                     timer_start3 = false;
                     wall_move_done = false;
                     player2.setPosition(320, 300);
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
-                        //game_start = false;
-                    }
+                    b_a = 20;
                 }
 
                 // player movement
@@ -594,7 +627,7 @@ int main() {
 
             // debug
 
-            //std::cout << "bounce count: " << b << std::endl;
+            std::cout << "bounce count: " << b << std::endl;
             //std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
             //std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
             //std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
@@ -607,6 +640,8 @@ int main() {
             //std::cout << "wall 2: " << wall2.getGlobalBounds().top << std::endl;
             //std::cout << "b counter: " << b << std::endl;
             std::cout << "wall alpha: " << wall_alpha << std::endl;
+            std::cout << "b_a: "<< b_a << std::endl;
+            std::cout << "walls y positions: " << wall1.getPosition().y << ", " << wall2.getPosition().y << std::endl;
 
 
             // increase obstacle speed
@@ -724,11 +759,11 @@ int main() {
 
             // check collision with player and walls
 
-            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>18) {
+            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a) {
                 intersected1 = true;
             }
 
-            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>18) {
+            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a) {
                 intersected1 = true;
             }
 
@@ -786,18 +821,23 @@ int main() {
             if (timer_start2)
                 timer_2++;
 
-            if (timer_start3 && b < 20)
+            if (timer_start3) // && b < 20
                 timer_3++;
 
             // wall move timer
 
-            //std::cout << timer_3 << std::endl;
+            std::cout << "timer_3: " << timer_3 << std::endl;
 
 
             // wall danger indicator
 
-            if (b >= 17 && !wall_move_done) {
+            if (b >= b_a-3 && !wall_move_done) {
+                wall_alpha = 50;
+                wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha));
+                wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha));
+                std::cout << "wall danger indicator" << std::endl;
                 timer_start3 = true;
+                std::cout << "timer start: " << timer_start3 << std::endl;
                 wall1.setPosition(0, 400);
                 wall2.setPosition(0, 60);
 
@@ -816,11 +856,19 @@ int main() {
                     wall2.setPosition(0, -20);
                 }
                 if (timer_3 >= 120) {
+                    std::cout << "walls move done" << std::endl;
+                    timer_start3 = false;
+                    timer_3 = 1;
                     wall_move_done = true;
                 }
+                add_b_a = false;
             }
 
-            if (b >= 20) {
+            // walls appearance
+
+            if (b >= b_a) {
+
+                std::cout << "moving walls" << std::endl;
                 const auto wall1_y = wall1.getPosition().y;
                 const auto wall2_y = wall2.getPosition().y;
 
@@ -830,15 +878,23 @@ int main() {
                     wall1.move(0, -wall1_step);
                     wall2.move(0, wall1_step);
                 }
-                if (wall2_y < 60) {
-                    //wall1.move(0, wall1_step);
-                }
-                if (b >= 40 && wall_alpha > 0) {
+
+                if (b >= b_a+20 && wall_alpha > 0) {
                     wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
                     wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
+                    //wall_alpha_test = 0;
                     std::cout << "fading walls" << std::endl;
 
                 }
+                if (b >= b_a+20 && wall_alpha == 0) { // b_a < b_a+20 && wall_alpha == 0 && !add_b_a
+                    std::cout << "set walls positions " << std::endl;
+                    wall1.setPosition(0, 480);
+                    wall2.setPosition(0, -20);
+                    b_a = b_a + 40;
+                    add_b_a = true;
+                    wall_move_done = false;
+                }
+
             }
 
             // duplicate obstacle
