@@ -356,7 +356,7 @@ int main() {
 
         //std::cout << "FPS: " << std::setprecision(4) << fps << std::endl;
 
-        std::cout << timer_5 << std::endl;
+        //std::cout << timer_5 << std::endl;
 
         float a_m = current_time * mp;
 
@@ -696,8 +696,8 @@ int main() {
             // debug
 
             //std::cout << "bounce count: " << b << std::endl;
-            std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
-            std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
+            //std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
+            //std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
             //std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
             //std::cout << "obstacle2 position: " << obstacle2.getPosition().x << ", " << obstacle2.getPosition().y << std::endl;
             //std::cout << "wall1 height: " << wall1.getGlobalBounds().top << std::endl;
@@ -939,7 +939,7 @@ int main() {
 
             if (b >= b_a) {
 
-                std::cout << "moving walls" << std::endl;
+                //std::cout << "moving walls" << std::endl;
                 const auto wall1_y = wall1.getPosition().y;
                 const auto wall2_y = wall2.getPosition().y;
 
@@ -954,7 +954,7 @@ int main() {
                     wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
                     wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
                     //wall_alpha_test = 0;
-                    std::cout << "fading walls" << std::endl;
+                    //std::cout << "fading walls" << std::endl;
 
                 }
                 if (b >= b_a+20 && wall_alpha == 0) { // b_a < b_a+20 && wall_alpha == 0 && !add_b_a
