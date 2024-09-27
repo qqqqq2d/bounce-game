@@ -1,20 +1,27 @@
+#include <chrono>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <random>
 #include <string>
 #include <cmath>
+#include <iomanip>
+#include <format>
 
 bool executed_1 = false;
 bool intersected1 = false;
 bool o2_start_moving = false;
 bool player_wall1_move = true;
-int timer_2 = 1;
+
+float timer_2 = 1;
 bool timer_start2;
-int timer_3 = 1;
+float timer_3 = 1;
 bool timer_start3;
-int timer_4 = 1;
+float timer_4 = 1;
+float timer_5 = 1;
 bool timer_start4;
+bool timer_start5;
+
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
@@ -29,6 +36,10 @@ float wall_alpha = 50;
 float wall_alpha_test = 50;
 int b_a = 20;
 bool add_b_a = false;
+float mp = 62.5;
+int window_res = 0;
+int s_i = 10;
+bool window_res_on;
 
 bool button_toggle = false;
 
@@ -73,13 +84,13 @@ void load_textures() {
         std::cout << "error loading bitmap font\n";
     if (!menu_texture.loadFromFile("../images/game_menu2.png"))
         std::cout << "error loading game menu image\n";
-    if (!menu_button1_texture.loadFromFile("../images/menu_button_play.png"))
+    if (!menu_button1_texture.loadFromFile("../images/menubuttonwhite.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button2_texture.loadFromFile("../images/menu_button_other.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button3_texture.loadFromFile("../images/menu_button_quit.png"))
         std::cout << "error loading menu image\n";
-    if (!menu_button1_texture_diff.loadFromFile("../images/menu_button_play_deselected.png"))
+    if (!menu_button1_texture_diff.loadFromFile("../images/menubuttonwhite.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button2_texture_diff.loadFromFile("../images/menu_button_other_deselected.png"))
         std::cout << "error loading menu image\n";
@@ -176,9 +187,8 @@ int main() {
 
     // create window 
     //sf::RenderWindow window(sf::VideoMode(640, 480),"My window", sf::Style::Close);
-    sf::RenderWindow window(sf::VideoMode(window_x, window_y),"My window", sf::Style::Titlebar | sf::Style::Close);
+    sf::RenderWindow window(sf::VideoMode(window_x, window_y),"Bounce game", sf::Style::Titlebar | sf::Style::Close);
     window.setPosition(sf::Vector2i(50, 50));
-    window.setFramerateLimit(60);
 
     // player1 rectangle
     sf::Sprite player;
@@ -206,6 +216,7 @@ int main() {
     sf::Sprite obstacle2;
     obstacle2.setOrigin(20, 20);
     obstacle2.setTexture(obstacle_texture);
+    obstacle2.setPosition(-20, -20);
 
     // game walls
     
@@ -233,7 +244,6 @@ int main() {
 
     // bounce counter
 
-
     std::string counter_text = "COUNTER: ";
     //std::string str = std::to_string(b);
     sf::Text bcounter_text;
@@ -243,6 +253,16 @@ int main() {
     bcounter_text.setPosition(0, 0);
     bcounter_text.setCharacterSize(20);
     bcounter_text.setFillColor(sf::Color::White);
+
+    // fps counter
+
+    std::string fps_counter_text = "FPS: ";
+    sf::Text fps_text;
+    fps_text.setFont(bitmap_font);
+
+    fps_text.setPosition(470, 0);
+    fps_text.setCharacterSize(20);
+    fps_text.setFillColor(sf::Color::White);
 
     // menu screen
 
@@ -255,8 +275,10 @@ int main() {
     sf::RectangleShape menu2(sf::Vector2f(640, 480));
     menu2.setFillColor(sf::Color(15, 15, 15));
 
-
     // button 1
+
+    sf::Vector2f button_scale = sf::Vector2f(8, 8);
+
 
     sf::Sprite menu_button1;
     // if (selected_menu_item == 1)
@@ -265,31 +287,31 @@ int main() {
     //     menu_button1.setTexture(menu_button1_texture_other);
 
     menu_button1.setPosition(0, 120);
-    menu_button1.setScale(sf::Vector2f(8, 8));
+    menu_button1.setScale(sf::Vector2f(1, 1));
 
     // button 2
 
     sf::Sprite menu_button2;
     menu_button2.setPosition(0, 220);
-    menu_button2.setScale(sf::Vector2f(8, 8));
+    menu_button2.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 3
 
     sf::Sprite menu_button3;
     menu_button3.setPosition(0, 320);
-    menu_button3.setScale(sf::Vector2f(8, 8));
+    menu_button3.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 4
 
     sf::Sprite menu_button4;
     menu_button4.setPosition(0, 120);
-    menu_button4.setScale(sf::Vector2f(8, 8));
+    menu_button4.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 5
 
     sf::Sprite menu_button5;
     menu_button5.setPosition(0, 220);
-    menu_button5.setScale(sf::Vector2f(8, 8));
+    menu_button5.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     /*void default_settings() {
         x = 320;
@@ -323,22 +345,40 @@ int main() {
 
     sf::Sprite game_background;
     game_background.setTexture(background_texture);
+
+    sf::Clock clock;
+
     while (window.isOpen()) {
+
+        // fps calculation
+        float current_time = clock.restart().asSeconds();
+        float fps = 1.0 / current_time;
+
+        //std::cout << "FPS: " << std::setprecision(4) << fps << std::endl;
+
+        std::cout << timer_5 << std::endl;
+
+        float a_m = current_time * mp;
 
         window.setKeyRepeatEnabled(false);
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
         //std::cout << "button toggle: " << button_toggle << std::endl;
         //std::cout << "timer 4: " << timer_4 << std::endl;
 
-        //window.setFramerateLimit(60);
-        window.setVerticalSyncEnabled(true);
+        window.setFramerateLimit(60);
+        //window.setVerticalSyncEnabled(true);
         
         sf::Event event;
 
         // timer 4
 
-        if (timer_start4)
-            timer_4++;
+        if (timer_start4 && timer_4 < 2)
+            //timer_4++;
+            timer_4 = timer_4 + a_m;
+
+        if (timer_start5 && timer_5 < 2)
+            //timer_4++;
+            timer_5 = timer_5 + a_m;
 
         while (window.pollEvent(event)) {
 
@@ -352,12 +392,12 @@ int main() {
                 game_start = true;
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 2) {
+                timer_start5 = true;
+
                 menu_screen2 = true;
                 highest_selected = 5;
                 lowest_selected = 4;
                 selected_menu_item = 4;
-
-
             }
             // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && menu_screen2 == true) {
             //
@@ -368,15 +408,17 @@ int main() {
             //     window.setSize(sf::Vector2u(window_x--, window_y--));
             // }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 3)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && selected_menu_item == 3)
                 window.close();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && selected_menu_item != highest_selected)// && !menu_screen2)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down && selected_menu_item != highest_selected)// && !menu_screen2)
                 selected_menu_item++;
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && selected_menu_item != lowest_selected)// && !menu_screen2)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up && selected_menu_item != lowest_selected)// && !menu_screen2)
                 selected_menu_item--;
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
+                timer_5 = 1;
+                timer_start5 = false;
                 menu_screen2 = false;
                 highest_selected = 3;
                 lowest_selected = 1;
@@ -389,7 +431,6 @@ int main() {
                 std::cout << "button on: " << button_toggle << std::endl;
                 button_toggle = true;
                 multiplayer_mode = true;
-
             }
 
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 5 && timer_4 > 1) {
@@ -400,13 +441,31 @@ int main() {
                 multiplayer_mode = false;
             }
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && menu_screen2)
-                std::cout << "window size: " << window.getSize().x << ", " << window.getSize().y << std::endl;
+            //std::cout << "window res: " << window_res << std::endl;
+
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && menu_screen2 && selected_menu_item == 4 && (timer_5 > 1)) {
+                window.setSize(sf::Vector2u(window_x = window_x+window_x*0.25, window_y = window_y+window_y*0.25));
+                window_res++;
+
+                timer_start5 = false;
+
+            }
+
+            if (window_res == 5) {
+                window.setSize(sf::Vector2u(window_x = 640, window_y = 480));
+                window.setPosition(sf::Vector2i(50, 50));
+                window_res = 0;
+            }
+
+            if (menu_screen2)
+                window_res_on = true;
+            else
+                window_res_on = false;
 
 
             // restart game
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::N) && intersected1 == true) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::N && intersected1 == true) {
                 x = 320;
                 y = 240;
                 executed_1 = false;
@@ -446,6 +505,12 @@ int main() {
 
         std::string str = std::to_string(b);
         bcounter_text.setString(counter_text + str);
+
+        // update fps counter string
+
+        auto fps_str = std::format("{:.2f}", fps);
+        fps_text.setString(fps_counter_text + fps_str);
+
 
         // update menu button textures
 
@@ -490,13 +555,14 @@ int main() {
 
         //std::cout << player_position.x << ", " << player_position.y << std::endl;
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && menu_screen2 && selected_menu_item == 4) {
-            window.setSize(sf::Vector2u(window_x = window_x+4, window_y = window_y+4));
-        }
 
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace) && menu_screen2 && selected_menu_item == 4) {
-            window.setSize(sf::Vector2u(window_x = window_x-4, window_y = window_y-4));
-        }
+        //if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Space) && menu_screen2 && selected_menu_item == 4) {
+        //    window.setSize(sf::Vector2u(window_x = window_x+window_x*2, window_y = window_y+window_y*2));
+        //}
+
+        //if (sf::Keyboard::isKeyPressed(sf::Keyboard::BackSpace) && menu_screen2 && selected_menu_item == 4) {
+        //    window.setSize(sf::Vector2u(window_x = window_x-4, window_y = window_y-4));
+        //}
 
 
         if (game_start == true) {
@@ -540,22 +606,24 @@ int main() {
                 // player movement
 
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && (player_position.y >= 0 + player.getOrigin().y + playerspeed)) //31
-                    player.move(0, -playerspeed);
+                    player.move(0, -playerspeed * a_m);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && (player_position.y <= 460 + player.getOrigin().y - playerspeed))
-                    player.move(0, playerspeed);
+                    player.move(0, playerspeed * a_m);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) &&(player_position.x >= 0 + player.getOrigin().x + playerspeed))
-                    player.move(-playerspeed, 0);
+                    player.move(-playerspeed * a_m, 0);
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (player_position.x <= 620 + player.getOrigin().x - playerspeed))
-                    player.move(playerspeed, 0);
+                    player.move(playerspeed * a_m, 0);
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (player2_position.y >= 0 + player.getOrigin().y + playerspeed))
-                    player2.move(0, -playerspeed);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (player2_position.y <= 460 + player.getOrigin().y - playerspeed))
-                    player2.move(0, playerspeed);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&(player2_position.x >= 0 + player.getOrigin().x + playerspeed))
-                    player2.move(-playerspeed, 0);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (player2_position.x <= 620 + player.getOrigin().x - playerspeed))
-                    player2.move(playerspeed, 0);
+                if (multiplayer_mode == true) {
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (player2_position.y >= 0 + player.getOrigin().y + playerspeed))
+                        player2.move(0, -playerspeed * a_m);
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (player2_position.y <= 460 + player.getOrigin().y - playerspeed))
+                        player2.move(0, playerspeed * a_m);
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&(player2_position.x >= 0 + player.getOrigin().x + playerspeed))
+                        player2.move(-playerspeed * a_m, 0);
+                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (player2_position.x <= 620 + player.getOrigin().x - playerspeed))
+                        player2.move(playerspeed * a_m, 0);
+                }
 
                 // sleep 1
 
@@ -564,18 +632,18 @@ int main() {
                 if (o2_start_moving == false) {
 
                     if (randomside == 1)
-                        obstacle.move(obstacle_x, obstacle_y);
+                        obstacle.move(obstacle_x * a_m, obstacle_y * a_m);
                     else
-                        obstacle.move(-obstacle_x, -obstacle_y);
+                        obstacle.move(-obstacle_x * a_m, -obstacle_y * a_m);
                 }
 
                 // obstacle2 moving
 
                 if (new_obstacle2 == true) {
                     if (randomside == 0)
-                        obstacle2.move(obstacle2_x, obstacle2_y);
+                        obstacle2.move(obstacle2_x * a_m, obstacle2_y * a_m);
                     else
-                        obstacle2.move(-obstacle2_x, -obstacle2_y);
+                        obstacle2.move(-obstacle2_x * a_m, -obstacle2_y * a_m);
                 }
 
                 // obstacle bouncing
@@ -627,9 +695,9 @@ int main() {
 
             // debug
 
-            std::cout << "bounce count: " << b << std::endl;
-            //std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
-            //std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
+            //std::cout << "bounce count: " << b << std::endl;
+            std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
+            std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
             //std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
             //std::cout << "obstacle2 position: " << obstacle2.getPosition().x << ", " << obstacle2.getPosition().y << std::endl;
             //std::cout << "wall1 height: " << wall1.getGlobalBounds().top << std::endl;
@@ -639,14 +707,15 @@ int main() {
             //std::cout << "player y position: " << player.getPosition().y << std::endl;
             //std::cout << "wall 2: " << wall2.getGlobalBounds().top << std::endl;
             //std::cout << "b counter: " << b << std::endl;
-            std::cout << "wall alpha: " << wall_alpha << std::endl;
-            std::cout << "b_a: "<< b_a << std::endl;
-            std::cout << "walls y positions: " << wall1.getPosition().y << ", " << wall2.getPosition().y << std::endl;
+            //std::cout << "wall alpha: " << wall_alpha << std::endl;
+            //std::cout << "b_a: "<< b_a << std::endl;
+            //std::cout << "walls y positions: " << wall1.getPosition().y << ", " << wall2.getPosition().y << std::endl;
+            //std::cout << "current time: " << current_time << std::endl;
 
 
             // increase obstacle speed
 
-            if (prev_b!=b && b%10==0 && b!=0 && b<80) {
+            if (prev_b!=b && b%s_i==0 && b!=0 && b<80) {
                 std::cout << "speed increased" << std::endl;
 
                 // obstacle
@@ -721,6 +790,7 @@ int main() {
 
             if (player_box.intersects(obstacle_box)) {
                 //std::cout << "intersected\n";
+
                 intersected1 = true;
 
                 //window.close();
@@ -740,6 +810,7 @@ int main() {
 
             if (player_box.intersects(obstacle2_box)) {
                 //std::cout << "intersected\n";
+
                 intersected1 = true;
 
                 //window.close();
@@ -752,18 +823,16 @@ int main() {
             }
 
 
-            // check collision with obstacle and wall1
-
             sf::FloatRect wall1_box = wall1.getGlobalBounds();
             sf::FloatRect wall2_box = wall2.getGlobalBounds();
 
             // check collision with player and walls
 
-            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a) {
+            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1) {
                 intersected1 = true;
             }
 
-            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a) {
+            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1) {
                 intersected1 = true;
             }
 
@@ -819,14 +888,16 @@ int main() {
             }
 
             if (timer_start2)
-                timer_2++;
+                //timer_2++;
+                timer_2 = timer_2 + a_m;
 
             if (timer_start3) // && b < 20
-                timer_3++;
+                //timer_3++;
+                timer_3 = timer_3 + a_m;
 
             // wall move timer
 
-            std::cout << "timer_3: " << timer_3 << std::endl;
+            //std::cout << "timer_3: " << timer_3 << std::endl;
 
 
             // wall danger indicator
@@ -875,8 +946,8 @@ int main() {
                 if (wall1_y > 400 && wall2_y < 60) {
                     const auto wall1_step = get_wall_step(wall1_y);
                     std::cout << "wall step" << -wall1_step << std::endl;
-                    wall1.move(0, -wall1_step);
-                    wall2.move(0, wall1_step);
+                    wall1.move(0, -wall1_step * a_m);
+                    wall2.move(0, wall1_step * a_m);
                 }
 
                 if (b >= b_a+20 && wall_alpha > 0) {
@@ -902,20 +973,22 @@ int main() {
             if (b >= 50 && obstacle.getPosition().x > 290 && obstacle.getPosition().x < 350 && obstacle.getPosition().y > 210 && obstacle.getPosition().y < 270 && duplicate_done == false) {
                 obstacle2.setPosition(obstacle.getPosition());
                 if (randomside == 1) {
-                    obstacle_x = 5;
-                    obstacle_y = 5;
+                    //obstacle_x = 5;
+                    //obstacle_y = 5;
                 }
                 else {
-                    obstacle_x = 5;
-                    obstacle_y = -5;
+                    //obstacle_x = 5;
+                    //obstacle_y = -5;
                 }
 
                 obstacle2_x = obstacle_x;
                 obstacle2_y = obstacle_y;
+
                 o2_start_moving = true;
                 //new_obstacle2 = true;
                 timer_start2 = true;
 
+                s_i = 40;
 
                 if (timer_2 >= 60) {
                     new_obstacle2 = true;
@@ -947,6 +1020,7 @@ int main() {
         if (intersected1 == true)
             window.draw(again_text);
         window.draw(bcounter_text);
+        window.draw(fps_text);
         if (game_start == false) {
             window.draw(menu);
             window.draw(menu_button1);
