@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <format>
 
+
 bool executed_1 = false;
 bool intersected1 = false;
 bool o2_start_moving = false;
