@@ -828,11 +828,11 @@ int main() {
 
             // check collision with player and walls
 
-            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1) {
+            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done) {
                 intersected1 = true;
             }
 
-            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1) {
+            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done) {
                 intersected1 = true;
             }
 
