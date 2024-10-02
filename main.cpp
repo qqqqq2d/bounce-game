@@ -85,13 +85,13 @@ void load_textures() {
         std::cout << "error loading bitmap font\n";
     if (!menu_texture.loadFromFile("../images/game_menu2.png"))
         std::cout << "error loading game menu image\n";
-    if (!menu_button1_texture.loadFromFile("../images/menubuttonwhite.png"))
+    if (!menu_button1_texture.loadFromFile("../images/menu_button_play.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button2_texture.loadFromFile("../images/menu_button_other.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button3_texture.loadFromFile("../images/menu_button_quit.png"))
         std::cout << "error loading menu image\n";
-    if (!menu_button1_texture_diff.loadFromFile("../images/menubuttonwhite.png"))
+    if (!menu_button1_texture_diff.loadFromFile("../images/menu_button_play_deselected.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button2_texture_diff.loadFromFile("../images/menu_button_other_deselected.png"))
         std::cout << "error loading menu image\n";
@@ -288,7 +288,7 @@ int main() {
     //     menu_button1.setTexture(menu_button1_texture_other);
 
     menu_button1.setPosition(0, 120);
-    menu_button1.setScale(sf::Vector2f(1, 1));
+    menu_button1.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 2
 
@@ -452,8 +452,8 @@ int main() {
 
             }
 
-            if (window_res == 5) {
-                window.setSize(sf::Vector2u(window_x = 640, window_y = 480));
+            if (window_res == 6) {
+                window.setSize(sf::Vector2u(window_x = 480, window_y = 360));
                 window.setPosition(sf::Vector2i(50, 50));
                 window_res = 0;
             }
@@ -495,7 +495,8 @@ int main() {
                 wall_move_done = false;
                 player2.setPosition(320, 300);
                 b_a = 20;
-
+                obstacle2_x = obstacle_x;
+                obstacle2_y = obstacle_y;
 
                 //std::cout << "x:" << x << "y:" << y << "x2: " << x2 << "y2: " << y2 << std::endl;
             }
@@ -602,6 +603,8 @@ int main() {
                     wall_move_done = false;
                     player2.setPosition(320, 300);
                     b_a = 20;
+                    obstacle2_x = obstacle_x;
+                    obstacle2_y = obstacle_y;
                 }
 
                 // player movement
@@ -697,8 +700,8 @@ int main() {
             // debug
 
             //std::cout << "bounce count: " << b << std::endl;
-            //std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
-            //std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
+            std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
+            std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
             //std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
             //std::cout << "obstacle2 position: " << obstacle2.getPosition().x << ", " << obstacle2.getPosition().y << std::endl;
             //std::cout << "wall1 height: " << wall1.getGlobalBounds().top << std::endl;
@@ -716,7 +719,7 @@ int main() {
 
             // increase obstacle speed
 
-            if (prev_b!=b && b%s_i==0 && b!=0 && b<80) {
+            if (prev_b!=b && b%s_i==0 && b!=0) {
                 std::cout << "speed increased" << std::endl;
 
                 // obstacle
@@ -865,12 +868,16 @@ int main() {
                 if (std::abs(o_l-o2_r) <= 10 || std::abs(o_r-o2_l) <= 10) {
                     std::cout << "move x\n";
                     obstacle_x = -obstacle_x;
+                    obstacle.setPosition(obstacle.getPosition().x-2, obstacle.getPosition().y);
                     obstacle2_x = -obstacle2_x;
+                    obstacle2.setPosition(obstacle2.getPosition().x-2, obstacle2.getPosition().y);
                 }
                 else {
                     std::cout << "move y\n";
                     obstacle_y = -obstacle_y;
+                    obstacle.setPosition(obstacle.getPosition().x, obstacle.getPosition().y-2);
                     obstacle2_y = -obstacle2_y;
+                    obstacle2.setPosition(obstacle2.getPosition().x, obstacle2.getPosition().y-2);
                 }
 
                 //if ()
@@ -946,7 +953,7 @@ int main() {
 
                 if (wall1_y > 400 && wall2_y < 60) {
                     const auto wall1_step = get_wall_step(wall1_y);
-                    std::cout << "wall step" << -wall1_step << std::endl;
+                    //std::cout << "wall step" << -wall1_step << std::endl;
                     wall1.move(0, -wall1_step * a_m);
                     wall2.move(0, wall1_step * a_m);
                 }
