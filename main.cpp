@@ -8,26 +8,22 @@
 #include <iomanip>
 #include <format>
 
-
 bool executed_1 = false;
 bool intersected1 = false;
 bool o2_start_moving = false;
 bool player_wall1_move = true;
-
 float timer_2 = 1;
-bool timer_start2;
+bool timer_start2 = false;
 float timer_3 = 1;
-bool timer_start3;
+bool timer_start3 = false;
 float timer_4 = 1;
 float timer_5 = 1;
-bool timer_start4;
-bool timer_start5;
-
+bool timer_start4 = false;
+bool timer_start5 = false;
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
 bool game_start = false;
-bool i = true;
 bool wall_move_done = false;
 bool menu_screen2 = false;
 int selected_menu_item = 1;
@@ -36,16 +32,24 @@ int highest_selected = 3;
 float wall_alpha = 50;
 float wall_alpha_test = 50;
 int b_a = 20;
-bool add_b_a = false;
 float mp = 62.5;
 int window_res = 0;
 int s_i = 10;
 bool window_res_on;
-
 bool button_toggle = false;
-
 bool multiplayer_mode;
-
+float x = 320;
+float y = 240;
+float x2, y2;
+int b = 0;
+int prev_b = 0;
+float obstacle_x = 5;
+float obstacle_y = 5;
+float obstacle2_x = obstacle_x;
+float obstacle2_y = obstacle_y;
+int window_x = 640;
+int window_y = 480;
+int playerspeed = 3;
 
 sf::Texture player_texture;
 sf::Texture player2_texture;
@@ -66,9 +70,36 @@ sf::Texture menu_button_blank_texture_on;
 sf::Texture menu_button_2players_texture;
 sf::Texture menu_button_2players_texture_on;
 sf::Texture menu_button_2players_texture_diff;
-
 sf::Font arial_font;
 sf::Font bitmap_font;
+
+void reset_variables() {
+    executed_1 = false;
+    intersected1 = false;
+    o2_start_moving = false;
+    player_wall1_move = true;
+    timer_2 = 1;
+    timer_start2 = false;
+    timer_3 = 1;
+    timer_start3 = false;
+    timer_4 = 1;
+    timer_5 = 1;
+    timer_start4 = false;
+    timer_start5 = false;
+    new_obstacle2 = false;
+    duplicate_done = false;
+    no_o_collision = false;
+    wall_move_done = false;
+    b_a = 20;
+    s_i = 10;
+    x = 320;
+    y = 240;
+    b = 0;
+    obstacle_x = 5;
+    obstacle_y = 5;
+    obstacle2_x = obstacle_x;
+    obstacle2_y = obstacle_y;
+}
 
 void load_textures() {
     if (!player_texture.loadFromFile("../images/player_white.png"))
@@ -109,7 +140,6 @@ void load_textures() {
         std::cout << "error loading menu image\n";
     if (!menu_button_2players_texture_diff.loadFromFile("../images/menu_button_2players_deselected.png"))
         std::cout << "error loading menu image\n";
-
 }
 
 //wall_y = 480..400
@@ -145,13 +175,8 @@ int get_wall_step(const float wall_y) {
     return 1;
 }
 
-// void fade_alpha() {
-//     for (int l = 1; l < 50; l++) {
-//         wall_alpha = wall_alpha-0.1;
-//     }
-// }
-
 int main() {
+
 
     load_textures();
 
@@ -161,9 +186,9 @@ int main() {
     std::uniform_int_distribution<> dist1{100, 340};
     std::uniform_int_distribution<> dist2{0, 1};
 
-    float x = 320;
-    float y = 240;
-    int x2, y2;
+    // float x = 320;
+    // float y = 240;
+    // int x2, y2;
 
     while (true) {    
     x2 = dist(gen);
@@ -171,9 +196,9 @@ int main() {
         if (x2 <= 100 || x2 >= 540)
             break;
     }
-    
     int randomside = dist2(gen);
 
+    /*
     int b = 0;
     int prev_b = 0;
 
@@ -184,7 +209,7 @@ int main() {
     float obstacle2_y = obstacle_y;
 
     int window_x = 640;
-    int window_y = 480;
+    int window_y = 480;*/
 
     // create window 
     //sf::RenderWindow window(sf::VideoMode(640, 480),"My window", sf::Style::Close);
@@ -314,36 +339,6 @@ int main() {
     menu_button5.setPosition(0, 220);
     menu_button5.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
-    /*void default_settings() {
-        x = 320;
-        y = 240;
-        executed_1 = false;
-        intersected1 = false;
-        o2_start_moving = false;
-        obstacle.setPosition(x2, y2);
-        player.setPosition(x, y);
-        b = 0;
-        obstacle_x = 5, obstacle_y = 5;
-        wall1.setPosition(0, 480);
-        wall2.setPosition(0, -20);
-        new_obstacle2 = false;
-        duplicate_done = false;
-        randomside = dist2(gen);
-        while (true) {
-            x2 = dist(gen);
-            y2 = dist1(gen);
-            if (x2 <= 100 || x2 >= 540)
-                break;
-        }
-        timer_2 = 1;
-        timer_3 = 1;
-        obstacle2.setPosition(-40, -40);
-        timer_start2 = false;
-        timer_start3 = false;
-        wall_move_done = false;
-        player2.setPosition(320, 300);
-    }*/
-
     sf::Sprite game_background;
     game_background.setTexture(background_texture);
 
@@ -467,7 +462,21 @@ int main() {
             // restart game
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::N && intersected1 == true) {
-                x = 320;
+                reset_variables();
+                obstacle.setPosition(x2, y2);
+                player.setPosition(x, y);
+                wall1.setPosition(0, 480);
+                wall2.setPosition(0, -20);
+                randomside = dist2(gen);
+                while (true) {
+                    x2 = static_cast<float>(dist(gen));
+                    y2 = static_cast<float>(dist1(gen));
+                    if (x2 <= 100 || x2 >= 540)
+                        break;
+                }
+                obstacle2.setPosition(-40, -40);
+                player2.setPosition(320, 300);
+                /*x = 320;
                 y = 240;
                 executed_1 = false;
                 intersected1 = false;
@@ -497,6 +506,7 @@ int main() {
                 b_a = 20;
                 obstacle2_x = obstacle_x;
                 obstacle2_y = obstacle_y;
+                s_i = 10;*/
 
                 //std::cout << "x:" << x << "y:" << y << "x2: " << x2 << "y2: " << y2 << std::endl;
             }
@@ -574,37 +584,21 @@ int main() {
                 // return to menu
 
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+                    reset_variables();
                     game_start = false;
-                    x = 320;
-                    y = 240;
-                    executed_1 = false;
-                    intersected1 = false;
-                    o2_start_moving = false;
                     obstacle.setPosition(x2, y2);
                     player.setPosition(x, y);
-                    b = 0;
-                    obstacle_x = 5, obstacle_y = 5;
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
-                    new_obstacle2 = false;
-                    duplicate_done = false;
                     randomside = dist2(gen);
                     while (true) {
-                        x2 = dist(gen);
-                        y2 = dist1(gen);
+                        x2 = static_cast<float>(dist(gen));
+                        y2 = static_cast<float>(dist1(gen));
                         if (x2 <= 100 || x2 >= 540)
                             break;
                     }
-                    timer_2 = 1;
-                    timer_3 = 1;
                     obstacle2.setPosition(-40, -40);
-                    timer_start2 = false;
-                    timer_start3 = false;
-                    wall_move_done = false;
                     player2.setPosition(320, 300);
-                    b_a = 20;
-                    obstacle2_x = obstacle_x;
-                    obstacle2_y = obstacle_y;
                 }
 
                 // player movement
@@ -787,7 +781,9 @@ int main() {
 
             }
 
-            // check collision with player and obstacle
+            // check collision
+            //
+            // with player and obstacle
 
             sf::FloatRect player_box = player.getGlobalBounds();
             sf::FloatRect obstacle_box = obstacle.getGlobalBounds();
@@ -940,7 +936,6 @@ int main() {
                     timer_3 = 1;
                     wall_move_done = true;
                 }
-                add_b_a = false;
             }
 
             // walls appearance
@@ -970,7 +965,6 @@ int main() {
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
                     b_a = b_a + 40;
-                    add_b_a = true;
                     wall_move_done = false;
                 }
 
