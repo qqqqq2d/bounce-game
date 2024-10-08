@@ -458,7 +458,6 @@ int main() {
             else
                 window_res_on = false;
 
-
             // restart game
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::N && intersected1 == true) {
