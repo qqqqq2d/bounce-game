@@ -1,6 +1,7 @@
 #include <chrono>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
 #include <iostream>
 #include <random>
 #include <string>
@@ -18,8 +19,12 @@ float timer_3 = 1;
 bool timer_start3 = false;
 float timer_4 = 1;
 float timer_5 = 1;
+float timer_6 = 1;
+float timer_7 = 1;
 bool timer_start4 = false;
 bool timer_start5 = false;
+bool timer_start6 = false;
+bool timer_start7 = false;
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
@@ -32,7 +37,7 @@ int highest_selected = 3;
 float wall_alpha = 50;
 float wall_alpha_test = 50;
 int b_a = 20;
-float mp = 62.5;
+float mp = 62.5; //62.5
 int window_res = 0;
 int s_i = 10;
 bool window_res_on;
@@ -47,9 +52,29 @@ float obstacle_x = 5;
 float obstacle_y = 5;
 float obstacle2_x = obstacle_x;
 float obstacle2_y = obstacle_y;
+float obstacle3_x = obstacle_x;
+float obstacle3_y = obstacle_y;
 int window_x = 640;
 int window_y = 480;
 int playerspeed = 3;
+bool show_fps = false;
+bool player_invincibility = false;
+bool pos_x_move_done = false;
+bool pos_y_move_done = false;
+bool neg_x_move_done = false;
+bool neg_y_move_done = true;
+bool x_move_condition1 = false;
+bool make_white_box_called = false;
+int n = -1;
+int m = -1;
+bool diagonal_rotating = true;
+bool small_obstacle_movement = true;
+bool found_diagonal = false;
+bool search_diagonal = false;
+int b_m = 0;
+bool obstacle3_collision = false;
+
+// textures
 
 sf::Texture player_texture;
 sf::Texture player2_texture;
@@ -70,8 +95,13 @@ sf::Texture menu_button_blank_texture_on;
 sf::Texture menu_button_2players_texture;
 sf::Texture menu_button_2players_texture_on;
 sf::Texture menu_button_2players_texture_diff;
+sf::Texture menu_button_resize_texture;
+sf::Texture menu_button_resize_texture_diff;
+sf::Texture obstacle_small_texture;
+sf::Texture white_rectangle;
 sf::Font arial_font;
 sf::Font bitmap_font;
+
 
 void reset_variables() {
     executed_1 = false;
@@ -84,6 +114,7 @@ void reset_variables() {
     timer_start3 = false;
     timer_4 = 1;
     timer_5 = 1;
+    timer_6 = 1;
     timer_start4 = false;
     timer_start5 = false;
     new_obstacle2 = false;
@@ -99,6 +130,15 @@ void reset_variables() {
     obstacle_y = 5;
     obstacle2_x = obstacle_x;
     obstacle2_y = obstacle_y;
+    player_invincibility = false;
+    diagonal_rotating = true;
+    small_obstacle_movement = true;
+    found_diagonal = false;
+    search_diagonal = false;
+    timer_7 = 1;
+    timer_start7 = false;
+    b_m = 0;
+    obstacle3_collision = false;
 }
 
 void load_textures() {
@@ -108,7 +148,7 @@ void load_textures() {
         std::cout << "error loading player2 image\n";
     if (!obstacle_texture.loadFromFile("../images/obstacle_red.png"))
         std::cout << "error loading obstacle image\n";
-    if (!background_texture.loadFromFile("../images/game_background.png"))
+    if (!background_texture.loadFromFile("../images/game_background_blue2.png"))
         std::cout << "error loading background image\n";
     if (!arial_font.loadFromFile("../fonts/arial.ttf"))
         std::cout << "error loading font\n";
@@ -140,6 +180,15 @@ void load_textures() {
         std::cout << "error loading menu image\n";
     if (!menu_button_2players_texture_diff.loadFromFile("../images/menu_button_2players_deselected.png"))
         std::cout << "error loading menu image\n";
+    if (!obstacle_small_texture.loadFromFile("../images/obstacle_red_small.png"))
+        std::cout << "error loading small obstacle image\n";
+    if (!white_rectangle.loadFromFile("../images/white_rectangle.png"))
+        std::cout << "error loading white rectangle image\n";
+    if (!menu_button_resize_texture.loadFromFile("../images/menu_button_resize.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button_resize_texture_diff.loadFromFile("../images/menu_button_resize_deselected.png"))
+        std::cout << "error loading menu image\n";
+
 }
 
 //wall_y = 480..400
@@ -175,10 +224,41 @@ int get_wall_step(const float wall_y) {
     return 1;
 }
 
+sf::Vector2f prev_obstacle_pos;
+sf::Vector2f prev_small_obstacle_pos;
+
+sf::Sprite createbox() {
+    sf::Sprite box;
+    box.setOrigin(5,5);
+    box.setTexture(white_rectangle);
+    box.setScale(2,2);
+    //std::cout << "box made" << std::endl;
+    return box;
+}
+
+std::vector<sf::Sprite> create_white_boxes(const int count) {
+    std::vector<sf::Sprite> result;
+    result.reserve(count);
+    for (int i = 0; i < count; i++) {
+        result.push_back(createbox());
+    }
+    return result;
+}
+
 int main() {
 
-
     load_textures();
+
+    // sounds
+    sf::SoundBuffer buffer;
+    if (!buffer.loadFromFile("../sounds/gamebouncesound.wav"))
+         return -1;
+    sf::Sound bounce_sound;
+
+    //music
+    sf::Music music;
+    if (!music.openFromFile("../sounds/gamebackgroundmusic.wav"))
+        return -1;
 
     std::random_device seed;
     std::mt19937 gen{seed()};
@@ -230,7 +310,6 @@ int main() {
     player2.setOrigin(10, 10);
     player2.setPosition(320, 300);
 
-
     // obstacle rectangle
     sf::Sprite obstacle;
     obstacle.setTexture(obstacle_texture);
@@ -243,6 +322,25 @@ int main() {
     obstacle2.setOrigin(20, 20);
     obstacle2.setTexture(obstacle_texture);
     obstacle2.setPosition(-20, -20);
+
+    // small obstacle rectangle
+    sf::Sprite obstacle3;
+    obstacle3.setOrigin(10, 10);
+    obstacle3.setScale(2, 2);
+    obstacle3.setTexture(obstacle_small_texture);
+    obstacle3.setPosition(x2-30, y2-30);
+    obstacle3.setColor(sf::Color(0,0,0,0));
+
+    //obstacle3.setPosition(-20, 0);
+
+    // white rectangle
+    auto white_boxes = create_white_boxes(50);
+
+    auto box_renderer = [&]() {
+        window.draw(createbox());
+        std::cout << "box rendered" << std::endl;
+    };
+
 
     // game walls
     
@@ -341,6 +439,7 @@ int main() {
 
     sf::Sprite game_background;
     game_background.setTexture(background_texture);
+    game_background.setScale(sf::Vector2f(8, 8));
 
     sf::Clock clock;
 
@@ -360,6 +459,7 @@ int main() {
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
         //std::cout << "button toggle: " << button_toggle << std::endl;
         //std::cout << "timer 4: " << timer_4 << std::endl;
+        //std::cout << "current time: " << current_time << std::endl;
 
         window.setFramerateLimit(60);
         //window.setVerticalSyncEnabled(true);
@@ -376,18 +476,62 @@ int main() {
             //timer_4++;
             timer_5 = timer_5 + a_m;
 
+        if (timer_start6)
+            timer_6 = timer_6 + a_m;
+
+        // debug key
+
+        if (sf::Keyboard::isKeyPressed(sf::Keyboard::T)) {
+            std::cout << "speed up game" << std::endl;
+            mp = 400;
+        }
+        else
+            mp = 62.5;
+
+        // if (sf::Keyboard::isKeyPressed(sf::Keyboard::F)) {
+        //     show_fps = true;
+        // }
+        //if (sf::Keyboard::isKeyPressed(sf::Keyboard::F))
+
+
         while (window.pollEvent(event)) {
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F) {
+                timer_start4 = true;
+                show_fps = true;
+            }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F && timer_4 > 1) {
+                show_fps = false;
+                timer_start4 = false;
+                timer_4 = 1;
+            }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::I) {
+                timer_start4 = true;
+                player_invincibility = true;
+                player.setColor(sf::Color(255, 255, 255, 64));
+                std::cout << "player invincibility on" << std::endl;
+            }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::I && timer_4 > 1) {
+                player_invincibility = false;
+                timer_start4 = false;
+                timer_4 = 1;
+                player.setColor(sf::Color(255, 255, 255, 255));
+                std::cout << "player invincibility off" << std::endl;
+            }
 
             if (event.type == sf::Event::Closed)
                 window.close(); 
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q)//(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 window.close();
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && !menu_screen2 && selected_menu_item == 1)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && !menu_screen2 && selected_menu_item == 1)
                 game_start = true;
 
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Return) && selected_menu_item == 2) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && selected_menu_item == 2) {
                 timer_start5 = true;
 
                 menu_screen2 = true;
@@ -403,7 +547,6 @@ int main() {
             // if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && menu_screen2 == true) {
             //     window.setSize(sf::Vector2u(window_x--, window_y--));
             // }
-
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && selected_menu_item == 3)
                 window.close();
 
@@ -463,6 +606,7 @@ int main() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::N && intersected1 == true) {
                 reset_variables();
                 obstacle.setPosition(x2, y2);
+                obstacle3.setPosition(x2-30, y2-30);
                 player.setPosition(x, y);
                 wall1.setPosition(0, 480);
                 wall2.setPosition(0, -20);
@@ -475,6 +619,7 @@ int main() {
                 }
                 obstacle2.setPosition(-40, -40);
                 player2.setPosition(320, 300);
+                obstacle3.setColor(sf::Color(0,0,0,0));
                 /*x = 320;
                 y = 240;
                 executed_1 = false;
@@ -544,10 +689,10 @@ int main() {
             menu_button3.setTexture(menu_button3_texture_diff);
         }
         if (selected_menu_item == 4) {
-            menu_button4.setTexture(menu_button_blank_texture);
+            menu_button4.setTexture(menu_button_resize_texture);
         }
         else {
-            menu_button4.setTexture(menu_button_blank_texture_diff);
+            menu_button4.setTexture(menu_button_resize_texture_diff);
         }
         if (selected_menu_item == 5) {
             menu_button5.setTexture(menu_button_2players_texture);
@@ -575,17 +720,37 @@ int main() {
         //    window.setSize(sf::Vector2u(window_x = window_x-4, window_y = window_y-4));
         //}
 
-
         if (game_start == true) {
+
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+                reset_variables();
+                game_start = false;
+                obstacle.setPosition(x2, y2);
+                obstacle3.setPosition(x2-30, y2-30);
+                player.setPosition(x, y);
+                wall1.setPosition(0, 480);
+                wall2.setPosition(0, -20);
+                randomside = dist2(gen);
+                while (true) {
+                    x2 = static_cast<float>(dist(gen));
+                    y2 = static_cast<float>(dist1(gen));
+                    if (x2 <= 100 || x2 >= 540)
+                        break;
+                }
+                obstacle2.setPosition(-40, -40);
+                player2.setPosition(320, 300);
+                obstacle3.setColor(sf::Color(0,0,0,0));
+            }
 
             if (intersected1 == false) {
 
                 // return to menu
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
+                /*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) {
                     reset_variables();
                     game_start = false;
                     obstacle.setPosition(x2, y2);
+                    obstacle3.setPosition(x2-40, y2);
                     player.setPosition(x, y);
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
@@ -598,7 +763,7 @@ int main() {
                     }
                     obstacle2.setPosition(-40, -40);
                     player2.setPosition(320, 300);
-                }
+                }*/
 
                 // player movement
 
@@ -628,10 +793,17 @@ int main() {
 
                 if (o2_start_moving == false) {
 
-                    if (randomside == 1)
+                    if (randomside == 1) {
                         obstacle.move(obstacle_x * a_m, obstacle_y * a_m);
-                    else
+                        if (small_obstacle_movement)
+                            obstacle3.move(obstacle_x * a_m, obstacle_y * a_m);
+                    }
+                    else {
                         obstacle.move(-obstacle_x * a_m, -obstacle_y * a_m);
+                        if (small_obstacle_movement)
+                            obstacle3.move(-obstacle_x * a_m, -obstacle_y * a_m);
+                    }
+
                 }
 
                 // obstacle2 moving
@@ -643,26 +815,56 @@ int main() {
                         obstacle2.move(-obstacle2_x * a_m, -obstacle2_y * a_m);
                 }
 
+
                 // obstacle bouncing
 
                 if (obstacle.getPosition().y > 460) {
                     obstacle_y = -obstacle_y;
+                    obstacle3_y = -obstacle3_y;
                     b++;
+                    bounce_sound.setBuffer(buffer);
+                    bounce_sound.play();
                     //timer_start = true;
                 }
                 if (obstacle.getPosition().x > 620) {
                     obstacle_x = -obstacle_x;
+                    obstacle3_x = -obstacle3_x;
                     b++;
+                    bounce_sound.setBuffer(buffer);
+                    bounce_sound.play();
                 }
                 if (obstacle.getPosition().y < 0 + obstacle.getOrigin().y) {
                     obstacle_y = -obstacle_y;
+                    obstacle3_y = -obstacle3_y;
                     b++;
+                    bounce_sound.setBuffer(buffer);
+                    bounce_sound.play();
                     //timer_start = true;
                 }
                 if (obstacle.getPosition().x < 0 + obstacle.getOrigin().x) {
                     obstacle_x = -obstacle_x;
+                    obstacle3_x = -obstacle3_x;
                     b++;
+                    bounce_sound.setBuffer(buffer);
+                    bounce_sound.play();
                 }
+
+                // small obstacle bouncing
+
+                /*if (obstacle3.getPosition().y > 460) {
+                    obstacle3_y = -obstacle3_y;
+                    //timer_start = true;
+                }
+                if (obstacle3.getPosition().x > 620) {
+                    obstacle3_x = -obstacle3_x;
+                }
+                if (obstacle3.getPosition().y < 0 + obstacle3.getOrigin().y) {
+                    obstacle3_y = -obstacle3_y;
+                    //timer_start = true;
+                }
+                if (obstacle3.getPosition().x < 0 + obstacle3.getOrigin().x) {
+                    obstacle3_x = -obstacle3_x;
+                }*/
 
                 // obstacle2 bouncing
 
@@ -671,20 +873,28 @@ int main() {
                     if (obstacle2.getPosition().y > 460) {
                         obstacle2_y = -obstacle2_y;
                         b++;
+                        bounce_sound.setBuffer(buffer);
+                        bounce_sound.play();
                         //timer_start = true;
                     }
                     if (obstacle2.getPosition().x > 620) {
                         obstacle2_x = -obstacle2_x;
                         b++;
+                        bounce_sound.setBuffer(buffer);
+                        bounce_sound.play();
                     }
                     if (obstacle2.getPosition().y < 0 + obstacle2.getOrigin().y) {
                         obstacle2_y = -obstacle2_y;
                         b++;
+                        bounce_sound.setBuffer(buffer);
+                        bounce_sound.play();
                         //timer_start = true;
                     }
                     if (obstacle2.getPosition().x < 0 + obstacle2.getOrigin().x) {
                         obstacle2_x = -obstacle2_x;
                         b++;
+                        bounce_sound.setBuffer(buffer);
+                        bounce_sound.play();
                     }
 
                 }
@@ -693,8 +903,8 @@ int main() {
             // debug
 
             //std::cout << "bounce count: " << b << std::endl;
-            std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
-            std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
+            //std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
+            //std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
             //std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
             //std::cout << "obstacle2 position: " << obstacle2.getPosition().x << ", " << obstacle2.getPosition().y << std::endl;
             //std::cout << "wall1 height: " << wall1.getGlobalBounds().top << std::endl;
@@ -708,6 +918,7 @@ int main() {
             //std::cout << "b_a: "<< b_a << std::endl;
             //std::cout << "walls y positions: " << wall1.getPosition().y << ", " << wall2.getPosition().y << std::endl;
             //std::cout << "current time: " << current_time << std::endl;
+            //std::cout << timer_7 << std::endl;
 
 
             // increase obstacle speed
@@ -787,7 +998,50 @@ int main() {
             sf::FloatRect player_box = player.getGlobalBounds();
             sf::FloatRect obstacle_box = obstacle.getGlobalBounds();
 
-            if (player_box.intersects(obstacle_box)) {
+            // check collision with player and small obstacle
+
+            for (auto & box: white_boxes) {
+                sf::FloatRect box_box = box.getGlobalBounds();
+                if (search_diagonal) {
+
+                    if (box_box.intersects(player_box) && obstacle3.getPosition()-prev_small_obstacle_pos != obstacle.getPosition()-prev_obstacle_pos) {
+                        std::cout << "player collided" << std::endl;
+                        diagonal_rotating = false;
+                        small_obstacle_movement = false;
+                        found_diagonal = true;
+                        search_diagonal = false;
+                        //if (obstacle3.getPosition().x > 0 || obstacle3.getPosition().y > 0 || obstacle3.getPosition().x < 640 || obstacle3.getPosition().y < 480) {
+                        //     obstacle3.move(n*a_m, m*a_m);
+                        //     diagonal_rotating = false;
+                        //}
+
+                    }
+                }
+            }
+
+            if (found_diagonal)
+                if (obstacle3.getPosition().x > 0 || obstacle3.getPosition().y > 0 || obstacle3.getPosition().x < 640 || obstacle3.getPosition().y < 480) {
+                    obstacle3.move(n*a_m*6, m*a_m*6);
+                    std::cout << "shoot" << std::endl;
+                    timer_start7 = true;
+                }
+
+            if (timer_7 >= 200 && found_diagonal) {
+                //obstacle3.setPosition(x2-30, y2-30);
+                obstacle3.setPosition(obstacle.getPosition().x-30, obstacle.getPosition().y-30);
+                diagonal_rotating = true;
+                small_obstacle_movement = true;
+                found_diagonal = false;
+                timer_7 = 1;
+                timer_start7 = false;
+                b_m = b;
+
+                //std::cout << obstacle3.getPosition().x << ", " << obstacle3.getPosition().y << std::endl;
+            }
+
+
+
+            if (player_box.intersects(obstacle_box) && !player_invincibility) {
                 //std::cout << "intersected\n";
 
                 intersected1 = true;
@@ -807,7 +1061,7 @@ int main() {
 
             sf::FloatRect obstacle2_box = obstacle2.getGlobalBounds();
 
-            if (player_box.intersects(obstacle2_box)) {
+            if (player_box.intersects(obstacle2_box) && !player_invincibility) {
                 //std::cout << "intersected\n";
 
                 intersected1 = true;
@@ -821,58 +1075,68 @@ int main() {
                 intersected1 = true;
             }
 
-
             sf::FloatRect wall1_box = wall1.getGlobalBounds();
             sf::FloatRect wall2_box = wall2.getGlobalBounds();
 
             // check collision with player and walls
 
-            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done) {
+            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done && !player_invincibility) {
                 intersected1 = true;
             }
 
-            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done) {
+            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done && !player_invincibility) {
                 intersected1 = true;
             }
 
             // check collision with obstacle1 and obstacle2
 
             if (obstacle_box.intersects(obstacle2_box) && timer_2 >= 100 && no_o_collision == false) {
-                std::cout << "collided" << std::endl;
-                std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
-                std::cout << "obstacle2 position: " << obstacle2.getPosition().x << ", " << obstacle2.getPosition().y << std::endl;
-                std::cout << "\n";
+                // std::cout << "collided" << std::endl;
+                // std::cout << "obstacle position: " << obstacle.getPosition().x << ", " << obstacle.getPosition().y << std::endl;
+                // std::cout << "obstacle2 position: " << obstacle2.getPosition().x << ", " << obstacle2.getPosition().y << std::endl;
+                // std::cout << "\n";
 
                 auto o_r = obstacle.getPosition().x+20;
                 auto o_l = obstacle.getPosition().x-20;
 
-                std::cout << "obstacle right side: " << o_r << std::endl;
-                std::cout << "obstacle left side: " << o_l << std::endl;
+                // std::cout << "obstacle right side: " << o_r << std::endl;
+                // std::cout << "obstacle left side: " << o_l << std::endl;
 
                 std::cout << "\n";
 
                 auto o2_r = obstacle2.getPosition().x+20;
                 auto o2_l = obstacle2.getPosition().x-20;
 
-                std::cout << "obstacle2 right side: " << o2_r << std::endl;
-                std::cout << "obstacle2 left side: " << o2_l << std::endl;
+                // std::cout << "obstacle2 right side: " << o2_r << std::endl;
+                // std::cout << "obstacle2 left side: " << o2_l << std::endl;
+                //
+                // std::cout << "obstacle left side - obstacle2 right side: " << std::abs(o_l - o2_r) << std::endl;
+                // std::cout << "obstacle right side - obstacle2 left side: " << std::abs(o_r - o2_l) << std::endl;
 
-                std::cout << "obstacle left side - obstacle2 right side: " << std::abs(o_l - o2_r) << std::endl;
-                std::cout << "obstacle right side - obstacle2 left side: " << std::abs(o_r - o2_l) << std::endl;
-
-                if (std::abs(o_l-o2_r) <= 10 || std::abs(o_r-o2_l) <= 10) {
+                //bounce left or right
+                if (std::abs(o_l-o2_r) <= 20 || std::abs(o_r-o2_l) <= 20) {
                     std::cout << "move x\n";
                     obstacle_x = -obstacle_x;
-                    obstacle.setPosition(obstacle.getPosition().x-2, obstacle.getPosition().y);
+                    if (obstacle.getPosition().x > prev_obstacle_pos.x) {
+                        obstacle.setPosition(obstacle.getPosition().x-5, obstacle.getPosition().y);
+                    }
+                    else {
+                        obstacle.setPosition(obstacle.getPosition().x+5, obstacle.getPosition().y);
+                    }
                     obstacle2_x = -obstacle2_x;
-                    obstacle2.setPosition(obstacle2.getPosition().x-2, obstacle2.getPosition().y);
+                    //obstacle2.setPosition(obstacle2.getPosition().x-2, obstacle2.getPosition().y);
                 }
+                //bounce up or down
                 else {
                     std::cout << "move y\n";
                     obstacle_y = -obstacle_y;
-                    obstacle.setPosition(obstacle.getPosition().x, obstacle.getPosition().y-2);
+                    if (obstacle.getPosition().y > prev_obstacle_pos.y) {
+                        obstacle.setPosition(obstacle.getPosition().x, obstacle.getPosition().y-5);
+                    }
+                    else {
+                        obstacle2.setPosition(obstacle2.getPosition().x, obstacle2.getPosition().y+5);
+                    }
                     obstacle2_y = -obstacle2_y;
-                    obstacle2.setPosition(obstacle2.getPosition().x, obstacle2.getPosition().y-2);
                 }
 
                 //if ()
@@ -882,6 +1146,8 @@ int main() {
 
                 std::cout  << "obstacle global bounds top: " << obstacle.getGlobalBounds().top << std::endl;
 
+                bounce_sound.setBuffer(buffer);
+                bounce_sound.play();
             }
 
             // check collision with player and player2
@@ -890,6 +1156,13 @@ int main() {
                 intersected1 = true;
             }
 
+            // check collision with player and obstacle3
+            sf::FloatRect obstacle3_box = obstacle3.getGlobalBounds();
+            if (player_box.intersects(obstacle3_box) && obstacle3_collision)
+                intersected1 = true;
+
+            //if ()
+
             if (timer_start2)
                 //timer_2++;
                 timer_2 = timer_2 + a_m;
@@ -897,6 +1170,9 @@ int main() {
             if (timer_start3) // && b < 20
                 //timer_3++;
                 timer_3 = timer_3 + a_m;
+
+            if (timer_start7)
+                timer_7 = timer_7 + a_m;
 
             // wall move timer
 
@@ -989,7 +1265,7 @@ int main() {
                 //new_obstacle2 = true;
                 timer_start2 = true;
 
-                s_i = 40;
+                //s_i = 40;
 
                 if (timer_2 >= 60) {
                     new_obstacle2 = true;
@@ -998,6 +1274,111 @@ int main() {
                     //std::cout << "reached 60, start moving" << std::endl;
                 }
             }
+
+            //small obstacle rotating
+
+            timer_start6 = true;
+            //std::cout << timer_6 << std::endl;
+
+            //std::cout << "obstacle3: " << obstacle3.getPosition().x << std::endl;
+            //std::cout << "obstacle + 50: " << obstacle.getPosition().x+50 << std::endl;
+
+            //if (std::abs(obstacle3.getPosition().x-(obstacle.getPosition().x+50)) <= 3) {
+            //    std::cout << "OBSTACLE3 WITHIN REACH" << std::endl;
+            //}
+
+            //std::cout << "diff: " << obstacle3.getPosition().x - (obstacle.getPosition().x+50) << std::endl;
+
+            if (timer_6 > 0 && small_obstacle_movement) {
+                // if (obstacle3.getPosition().x <= obstacle.getPosition().x+50 && !x_move_condition1 || obstacle3.getPosition().x <= obstacle.getPosition().x+50 && x_move_condition1 && std::abs(obstacle3.getPosition().y-(obstacle.getPosition().y-50)) <= 3) {
+                //     obstacle3.move(2 * a_m,0);
+                //     //std::cout << "moving pos x" << std::endl;
+                // }
+                if (!x_move_condition1) {
+                    if (obstacle3.getPosition().x <= obstacle.getPosition().x+50) {
+                        obstacle3.move(2 * a_m,0);
+                    }
+                }
+                else {
+                    if (x_move_condition1) {
+                        if (obstacle3.getPosition().x <= obstacle.getPosition().x+50 && std::abs(obstacle3.getPosition().y-(obstacle.getPosition().y-30)) <= 3) {
+                            obstacle3.move(2 * a_m,0);
+                        }
+                    }
+                }
+
+                if (obstacle3.getPosition().y <= obstacle.getPosition().y+50 && std::abs(
+                        obstacle3.getPosition().x-(obstacle.getPosition().x+50)) <= 3) {
+                    obstacle3.move(0,2 * a_m);
+                    x_move_condition1 = true;
+                    //std::cout << "moving pos y" << std::endl;
+                        }
+                if (obstacle3.getPosition().x >= obstacle.getPosition().x-30 && std::abs(
+                        obstacle3.getPosition().y-(obstacle.getPosition().y + 50)) <= 3) {
+                    obstacle3.move(-2 * a_m,0);
+                    //std::cout << "move neg x" << std::endl;
+                        }
+                if (obstacle3.getPosition().y >= obstacle.getPosition().y-30 && std::abs(
+                        obstacle3.getPosition().x-(obstacle.getPosition().x-30)) <= 3 ) {
+                    obstacle3.move(0, -2 * a_m);
+                }
+            }
+
+            //white_box.setPosition(obstacle3.getPosition()+sf::Vector2f(50, 50));
+
+            int distance_max_x = std::abs(obstacle.getPosition().x - 640);
+            int distance_max_y = std::abs(obstacle.getPosition().y - 480);
+            int distance_min_x = std::abs(obstacle.getPosition().x - 0);
+            int distance_min_y = std::abs(obstacle.getPosition().y - 0);
+
+            //std::cout << distance_max_x << std::endl;
+
+            //std::cout << "minimum distance: " << std::min(distance_max_x, distance_max_y, distance_min_x, distance_min_y) << std::endl;
+            if (diagonal_rotating) {
+                if (std::min({distance_max_x, distance_max_y, distance_min_x, distance_min_y}) == distance_max_x) {
+                    n = -1;
+                }
+                if (std::min({distance_max_x, distance_max_y, distance_min_x, distance_min_y}) == distance_max_y) {
+                    //std::cout << "max_y" << std::endl;
+                    m = -1;
+                }
+                if (std::min({distance_max_x, distance_max_y, distance_min_x, distance_min_y}) == distance_min_x) {
+                    //std::cout << "min_x" << std::endl;
+                    n = 1;
+                }
+                if (std::min({distance_max_x, distance_max_y, distance_min_x, distance_min_y}) == distance_min_y) {
+                    //std::cout << "min_y" << std::endl;
+                    m = 1;
+                }
+            }
+
+            //condition for object3 to start searching for diagonal
+
+            if (b == 25 || b == b_m+5) {
+                 search_diagonal = true;
+            }
+
+            //condition for object3 to show up and act
+            if (b == 20) {
+                obstacle3.setColor(sf::Color(255,255,255,255));
+                obstacle3_collision = true;
+            }
+
+            std::cout << "b_m: "<< b_m << std::endl;
+            std::cout << "b: "<< b << std::endl;
+
+            std::cout << "search diagonal: " << search_diagonal << std::endl;
+
+            // makewhitebox(20);
+            float i = 0.0;
+            float j = 0.0;
+
+            for (auto & box: white_boxes) {
+                box.setPosition(obstacle3.getPosition()+sf::Vector2f(10*i*n, 10*j*m));
+                i+=1.0;
+                j+=1.0;
+            }
+
             /*
             if (b >= 1 && wall1.getPosition().y > 480 && obstacle.getPosition().y == 320)
                 wall1.move(0, -60);
@@ -1005,23 +1386,34 @@ int main() {
             if (b >= 1 && wall2.getPosition().y < 0 && obstacle.getPosition().y == 320)
                 wall2.move(0, 40);
             */
+            prev_obstacle_pos = obstacle.getPosition();
+            prev_small_obstacle_pos = obstacle3.getPosition();
         }
 
         window.clear(sf::Color::Black);
         window.draw(game_background);
+
+        window.draw(obstacle3);
         window.draw(player);
         window.draw(obstacle);
         window.draw(wall1);
         window.draw(wall2);
+        for (auto & box: white_boxes) {
+             //window.draw(box);
+        }
+        //box_renderer();
+        //window.draw();
+
+        //window.draw()
         if (multiplayer_mode)
             window.draw(player2);
-
         if (new_obstacle2 == true)
             window.draw(obstacle2);
         if (intersected1 == true)
             window.draw(again_text);
         window.draw(bcounter_text);
-        window.draw(fps_text);
+        if (show_fps == true)
+            window.draw(fps_text);
         if (game_start == false) {
             window.draw(menu);
             window.draw(menu_button1);
