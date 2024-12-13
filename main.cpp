@@ -21,10 +21,12 @@ float timer_4 = 1;
 float timer_5 = 1;
 float timer_6 = 1;
 float timer_7 = 1;
+float timer_8 = 1;
 bool timer_start4 = false;
 bool timer_start5 = false;
 bool timer_start6 = false;
 bool timer_start7 = false;
+bool timer_start8 = false;
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
@@ -73,6 +75,20 @@ bool found_diagonal = false;
 bool search_diagonal = false;
 int b_m = 0;
 bool obstacle3_collision = false;
+int player_move_timer = 60;
+bool player_move_timer_start = false;
+bool wasd_movement = true;
+bool arrow_movement = false;
+float obstacle3_speed = 3.0;
+int obstacle3_shot = 0;
+bool search_condition = false;
+bool initialized = false;
+bool initialized2 = false;
+bool player1_dead = false;
+bool player2_dead = false;
+float player1_alpha = 255;
+float player2_alpha = 255;
+
 
 // textures
 
@@ -102,6 +118,9 @@ sf::Texture white_rectangle;
 sf::Font arial_font;
 sf::Font bitmap_font;
 
+void one_time_run() {
+
+}
 
 void reset_variables() {
     executed_1 = false;
@@ -112,7 +131,7 @@ void reset_variables() {
     timer_start2 = false;
     timer_3 = 1;
     timer_start3 = false;
-    timer_4 = 1;
+    //timer_4 = 1;
     timer_5 = 1;
     timer_6 = 1;
     timer_start4 = false;
@@ -139,6 +158,15 @@ void reset_variables() {
     timer_start7 = false;
     b_m = 0;
     obstacle3_collision = false;
+    obstacle3_speed = 3.0;
+    obstacle3_shot = 0;
+    search_condition = false;
+    initialized = false;
+    initialized2 = false;
+    player1_dead = false;
+    player2_dead = false;
+    player1_alpha = 255;
+    player2_alpha = 255;
 }
 
 void load_textures() {
@@ -301,7 +329,7 @@ int main() {
     player.setTexture(player_texture);
     player.setOrigin(10, 10);
     player.setPosition(320, 240);
-    //player.setFillColor(sf::Color(255, 255, 255));
+    player.setColor(sf::Color(255,255,255,player1_alpha));
 
     // player2 rectangle
 
@@ -309,6 +337,7 @@ int main() {
     player2.setTexture(player2_texture);
     player2.setOrigin(10, 10);
     player2.setPosition(320, 300);
+    player2.setColor(sf::Color(255,255,255,player2_alpha));
 
     // obstacle rectangle
     sf::Sprite obstacle;
@@ -340,7 +369,6 @@ int main() {
         window.draw(createbox());
         std::cout << "box rendered" << std::endl;
     };
-
 
     // game walls
     
@@ -479,6 +507,9 @@ int main() {
         if (timer_start6)
             timer_6 = timer_6 + a_m;
 
+        if (player_move_timer_start)
+            player_move_timer = player_move_timer - a_m;
+
         // debug key
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::T)) {
@@ -523,7 +554,7 @@ int main() {
             }
 
             if (event.type == sf::Event::Closed)
-                window.close(); 
+                window.close();
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q)//(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 window.close();
@@ -620,6 +651,8 @@ int main() {
                 obstacle2.setPosition(-40, -40);
                 player2.setPosition(320, 300);
                 obstacle3.setColor(sf::Color(0,0,0,0));
+                player.setColor(sf::Color(255,255,255,player1_alpha));
+                player2.setColor(sf::Color(255,255,255,player2_alpha));
                 /*x = 320;
                 y = 240;
                 executed_1 = false;
@@ -740,6 +773,8 @@ int main() {
                 obstacle2.setPosition(-40, -40);
                 player2.setPosition(320, 300);
                 obstacle3.setColor(sf::Color(0,0,0,0));
+                player.setColor(sf::Color(255,255,255,player1_alpha));
+                player2.setColor(sf::Color(255,255,255,player2_alpha));
             }
 
             if (intersected1 == false) {
@@ -765,26 +800,45 @@ int main() {
                     player2.setPosition(320, 300);
                 }*/
 
-                // player movement
+                auto key_pressed = [](const sf::Keyboard::Key key) -> bool {
 
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) && (player_position.y >= 0 + player.getOrigin().y + playerspeed)) //31
-                    player.move(0, -playerspeed * a_m);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) && (player_position.y <= 460 + player.getOrigin().y - playerspeed))
-                    player.move(0, playerspeed * a_m);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) &&(player_position.x >= 0 + player.getOrigin().x + playerspeed))
-                    player.move(-playerspeed * a_m, 0);
-                if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) && (player_position.x <= 620 + player.getOrigin().x - playerspeed))
-                    player.move(playerspeed * a_m, 0);
+                    return sf::Keyboard::isKeyPressed(key);
+                };
+
+                // player movement
+                if (!multiplayer_mode) {
+                    if ((key_pressed(sf::Keyboard::W) || key_pressed(sf::Keyboard::Up)) && (player_position.y >= 0 + player.getOrigin().y + playerspeed))
+                        player.move(0, -playerspeed * a_m);
+                    if ((key_pressed(sf::Keyboard::S) || key_pressed(sf::Keyboard::Down)) && (player_position.y <= 460 + player.getOrigin().y - playerspeed))
+                        player.move(0, playerspeed * a_m);
+                    if ((key_pressed(sf::Keyboard::A) || key_pressed(sf::Keyboard::Left)) &&(player_position.x >= 0 + player.getOrigin().x + playerspeed))
+                        player.move(-playerspeed * a_m, 0);
+                    if ((key_pressed(sf::Keyboard::D) || key_pressed(sf::Keyboard::Right)) && (player_position.x <= 620 + player.getOrigin().x - playerspeed))
+                        player.move(playerspeed * a_m, 0);
+                }
 
                 if (multiplayer_mode == true) {
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (player2_position.y >= 0 + player.getOrigin().y + playerspeed))
-                        player2.move(0, -playerspeed * a_m);
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Down) && (player2_position.y <= 460 + player.getOrigin().y - playerspeed))
-                        player2.move(0, playerspeed * a_m);
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) &&(player2_position.x >= 0 + player.getOrigin().x + playerspeed))
-                        player2.move(-playerspeed * a_m, 0);
-                    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right) && (player2_position.x <= 620 + player.getOrigin().x - playerspeed))
-                        player2.move(playerspeed * a_m, 0);
+
+                    if (!player1_dead) {
+                        if (key_pressed(sf::Keyboard::W) && (player_position.y >= 0 + player.getOrigin().y + playerspeed))
+                            player.move(0, -playerspeed * a_m);
+                        if (key_pressed(sf::Keyboard::S) && (player_position.y <= 460 + player.getOrigin().y - playerspeed))
+                            player.move(0, playerspeed * a_m);
+                        if (key_pressed(sf::Keyboard::A) &&(player_position.x >= 0 + player.getOrigin().x + playerspeed))
+                            player.move(-playerspeed * a_m, 0);
+                        if (key_pressed(sf::Keyboard::D) && (player_position.x <= 620 + player.getOrigin().x - playerspeed))
+                            player.move(playerspeed * a_m, 0);
+                    }
+                    if (!player2_dead) {
+                        if (key_pressed(sf::Keyboard::Up) && (player2_position.y >= 0 + player.getOrigin().y + playerspeed))
+                            player2.move(0, -playerspeed * a_m);
+                        if (key_pressed(sf::Keyboard::Down) && (player2_position.y <= 460 + player.getOrigin().y - playerspeed))
+                            player2.move(0, playerspeed * a_m);
+                        if (key_pressed(sf::Keyboard::Left) &&(player2_position.x >= 0 + player.getOrigin().x + playerspeed))
+                            player2.move(-playerspeed * a_m, 0);
+                        if (key_pressed(sf::Keyboard::Right) && (player2_position.x <= 620 + player.getOrigin().x - playerspeed))
+                            player2.move(playerspeed * a_m, 0);
+                    }
                 }
 
                 // sleep 1
@@ -918,7 +972,12 @@ int main() {
             //std::cout << "b_a: "<< b_a << std::endl;
             //std::cout << "walls y positions: " << wall1.getPosition().y << ", " << wall2.getPosition().y << std::endl;
             //std::cout << "current time: " << current_time << std::endl;
-            //std::cout << timer_7 << std::endl;
+            //std::cout << timer_4 << std::endl;
+            //std::cout << obstacle3_shot << std::endl;
+            //std::cout << "obstacle3 speed: " << obstacle3_speed << std::endl;
+            //std::cout << "obstacle3 shot: " << obstacle3_shot << std::endl;
+            //std::cout << "player1 alpha: " << player1_alpha << std::endl;
+            //std::cout << "player2 alpha: " << player2_alpha << std::endl;
 
 
             // increase obstacle speed
@@ -997,14 +1056,17 @@ int main() {
 
             sf::FloatRect player_box = player.getGlobalBounds();
             sf::FloatRect obstacle_box = obstacle.getGlobalBounds();
+            sf::FloatRect player2_box = player2.getGlobalBounds();
 
             // check collision with player and small obstacle
 
             for (auto & box: white_boxes) {
                 sf::FloatRect box_box = box.getGlobalBounds();
                 if (search_diagonal) {
+                    //initialized = false;
+                    //initialized2 = false;
 
-                    if (box_box.intersects(player_box) && obstacle3.getPosition()-prev_small_obstacle_pos != obstacle.getPosition()-prev_obstacle_pos) {
+                    if ((box_box.intersects(player_box) || (box_box.intersects(player2_box) && multiplayer_mode) && obstacle3.getPosition()-prev_small_obstacle_pos != obstacle.getPosition()-prev_obstacle_pos)) {
                         std::cout << "player collided" << std::endl;
                         diagonal_rotating = false;
                         small_obstacle_movement = false;
@@ -1021,9 +1083,18 @@ int main() {
 
             if (found_diagonal)
                 if (obstacle3.getPosition().x > 0 || obstacle3.getPosition().y > 0 || obstacle3.getPosition().x < 640 || obstacle3.getPosition().y < 480) {
-                    obstacle3.move(n*a_m*6, m*a_m*6);
+                    obstacle3.move(n*a_m*obstacle3_speed, m*a_m*obstacle3_speed);
                     std::cout << "shoot" << std::endl;
                     timer_start7 = true;
+
+
+                    //static bool initialized;
+                    if (!initialized) {
+                        initialized = true;
+                        //std::cout << "increase obstacle3 shot" << std::endl;
+                        obstacle3_shot++;
+                        //obstacle3_speed++;
+                    }
                 }
 
             if (timer_7 >= 200 && found_diagonal) {
@@ -1035,6 +1106,8 @@ int main() {
                 timer_7 = 1;
                 timer_start7 = false;
                 b_m = b;
+                initialized = false;
+                initialized2 = false;
 
                 //std::cout << obstacle3.getPosition().x << ", " << obstacle3.getPosition().y << std::endl;
             }
@@ -1043,18 +1116,24 @@ int main() {
 
             if (player_box.intersects(obstacle_box) && !player_invincibility) {
                 //std::cout << "intersected\n";
-
+                if (multiplayer_mode) {
+                    player1_dead = true;
+                }
+                else {
                 intersected1 = true;
+                }
 
                 //window.close();
             }
 
             // check collision with player2 and obstacle
-
-            sf::FloatRect player2_box = player2.getGlobalBounds();
-
             if (player2_box.intersects(obstacle_box) && multiplayer_mode) {
-                intersected1 = true;
+                if (multiplayer_mode) {
+                    player2_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
             }
 
             // check collision with player and obstacle2
@@ -1063,16 +1142,24 @@ int main() {
 
             if (player_box.intersects(obstacle2_box) && !player_invincibility) {
                 //std::cout << "intersected\n";
-
-                intersected1 = true;
-
+                if (multiplayer_mode) {
+                    player1_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
                 //window.close();
             }
 
             // check collision with player2 and obstacle2
 
             if (player2_box.intersects(obstacle2_box) && multiplayer_mode) {
-                intersected1 = true;
+                if (multiplayer_mode) {
+                    player2_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
             }
 
             sf::FloatRect wall1_box = wall1.getGlobalBounds();
@@ -1081,11 +1168,21 @@ int main() {
             // check collision with player and walls
 
             if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done && !player_invincibility) {
-                intersected1 = true;
+                if (multiplayer_mode) {
+                    player1_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
             }
 
             if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done && !player_invincibility) {
-                intersected1 = true;
+                if (multiplayer_mode) {
+                    player2_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
             }
 
             // check collision with obstacle1 and obstacle2
@@ -1158,8 +1255,55 @@ int main() {
 
             // check collision with player and obstacle3
             sf::FloatRect obstacle3_box = obstacle3.getGlobalBounds();
-            if (player_box.intersects(obstacle3_box) && obstacle3_collision)
+            if (player_box.intersects(obstacle3_box) && obstacle3_collision && !player_invincibility)
+                if (multiplayer_mode) {
+                    player1_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
+
+            // check collision with player2 and obstacle3
+            if (player2_box.intersects(obstacle3_box) && obstacle3_collision && multiplayer_mode)
+                if (multiplayer_mode) {
+                    player2_dead = true;
+                }
+                else {
+                    intersected1 = true;
+                }
+
+            //move player out of game
+            if (player1_dead) {
+                if (player1_alpha > 0) {
+                    player1_alpha = player1_alpha - 3;
+                    player.setColor(sf::Color(255,255,255,player1_alpha));
+                    //std::cout << "player1 alpha: " << player1_alpha << std::endl;
+                }
+                if (player1_alpha < 100) {
+                    player.setPosition(-1000, 0);
+                    std::cout << "player1 moved" << std::endl;
+
+                }
+            }
+
+            if (player2_dead) {
+                if (player2_alpha > 0) {
+                    player2_alpha = player2_alpha - 3;
+                    player2.setColor(sf::Color(255,255,255,player2_alpha));
+
+                }
+                if (player2_alpha < 100) {
+                    player2.setPosition(-1000, 0);
+                }
+
+            }
+
+            //end game if both players dead
+            if (player1_dead && player2_dead) {
                 intersected1 = true;
+            }
+
+
 
             //if ()
 
@@ -1174,9 +1318,20 @@ int main() {
             if (timer_start7)
                 timer_7 = timer_7 + a_m;
 
+            if (timer_start8)
+                timer_8 = timer_8 + a_m;
+
             // wall move timer
 
             //std::cout << "timer_3: " << timer_3 << std::endl;
+
+            //increase obstacle3 speed
+            if (obstacle3_shot%1 == 0 && !initialized2 && found_diagonal) {
+                initialized2 = true;
+                obstacle3_speed = obstacle3_speed + 0.2;
+                std::cout << "increase speed" << std::endl;
+            }
+
 
 
             // wall danger indicator
@@ -1247,7 +1402,7 @@ int main() {
 
             // duplicate obstacle
 
-            if (b >= 50 && obstacle.getPosition().x > 290 && obstacle.getPosition().x < 350 && obstacle.getPosition().y > 210 && obstacle.getPosition().y < 270 && duplicate_done == false) {
+            if (b >= 100 && obstacle.getPosition().x > 290 && obstacle.getPosition().x < 350 && obstacle.getPosition().y > 210 && obstacle.getPosition().y < 270 && duplicate_done == false) {
                 obstacle2.setPosition(obstacle.getPosition());
                 if (randomside == 1) {
                     //obstacle_x = 5;
@@ -1354,9 +1509,12 @@ int main() {
 
             //condition for object3 to start searching for diagonal
 
-            if (b == 25 || b == b_m+5) {
+            if (b == 25 || (search_condition && b == b_m+5)) {
                  search_diagonal = true;
             }
+
+            if (search_diagonal)
+                search_condition = true;
 
             //condition for object3 to show up and act
             if (b == 20) {
@@ -1364,10 +1522,10 @@ int main() {
                 obstacle3_collision = true;
             }
 
-            std::cout << "b_m: "<< b_m << std::endl;
-            std::cout << "b: "<< b << std::endl;
+            //std::cout << "b_m: "<< b_m << std::endl;
+            //std::cout << "b: "<< b << std::endl;
 
-            std::cout << "search diagonal: " << search_diagonal << std::endl;
+            //std::cout << "search diagonal: " << search_diagonal << std::endl;
 
             // makewhitebox(20);
             float i = 0.0;
@@ -1393,14 +1551,16 @@ int main() {
         window.clear(sf::Color::Black);
         window.draw(game_background);
 
+        for (auto & box: white_boxes) {
+            //window.draw(box);
+        }
+
         window.draw(obstacle3);
         window.draw(player);
         window.draw(obstacle);
         window.draw(wall1);
         window.draw(wall2);
-        for (auto & box: white_boxes) {
-             //window.draw(box);
-        }
+
         //box_renderer();
         //window.draw();
 
