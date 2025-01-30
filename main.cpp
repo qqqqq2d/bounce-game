@@ -15,30 +15,40 @@ bool o2_start_moving = false;
 bool player_wall1_move = true;
 float timer_2 = 1;
 bool timer_start2 = false;
-float timer_3 = 1;
-bool timer_start3 = false;
+float wall_timer = 1;
+bool wall_timer_start = false;
+
+float wall_timer2 = 1;
+bool wall_timer_start2 = false;
+
 float timer_4 = 1;
 float timer_5 = 1;
 float timer_6 = 1;
 float timer_7 = 1;
 float timer_8 = 1;
+float timer_9 = 1;
 bool timer_start4 = false;
 bool timer_start5 = false;
 bool timer_start6 = false;
 bool timer_start7 = false;
 bool timer_start8 = false;
+bool timer_start9 = false;
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
 bool game_start = false;
 bool wall_move_done = false;
+bool wall_move_done2 = false;
 bool menu_screen2 = false;
 int selected_menu_item = 1;
 int lowest_selected = 1;
 int highest_selected = 3;
-float wall_alpha = 50;
+float wall_alpha = 20.0;
+float wall_alpha2 = 20.0;
+float flashwall_alpha = 50.0;
 float wall_alpha_test = 50;
 int b_a = 20;
+int b_a2 = 30;
 float mp = 62.5; //62.5
 int window_res = 0;
 int s_i = 10;
@@ -88,6 +98,13 @@ bool player1_dead = false;
 bool player2_dead = false;
 float player1_alpha = 255;
 float player2_alpha = 255;
+bool end_sound_played = false;
+bool flash_walls = true;
+bool flash1_done = false;
+bool flash2_done = true;
+bool sound_on = false;
+float background_alpha = 200;
+float player_x;
 
 
 // textures
@@ -118,9 +135,6 @@ sf::Texture white_rectangle;
 sf::Font arial_font;
 sf::Font bitmap_font;
 
-void one_time_run() {
-
-}
 
 void reset_variables() {
     executed_1 = false;
@@ -129,8 +143,10 @@ void reset_variables() {
     player_wall1_move = true;
     timer_2 = 1;
     timer_start2 = false;
-    timer_3 = 1;
-    timer_start3 = false;
+    wall_timer = 1;
+    wall_timer_start = false;
+    wall_timer2 = 1;
+    wall_timer_start2 = false;
     //timer_4 = 1;
     timer_5 = 1;
     timer_6 = 1;
@@ -140,7 +156,9 @@ void reset_variables() {
     duplicate_done = false;
     no_o_collision = false;
     wall_move_done = false;
+    wall_move_done2 = false;
     b_a = 20;
+    b_a2 = 30;
     s_i = 10;
     x = 320;
     y = 240;
@@ -167,6 +185,11 @@ void reset_variables() {
     player2_dead = false;
     player1_alpha = 255;
     player2_alpha = 255;
+    end_sound_played = false;
+    timer_9 = 1;
+    flash1_done = false;
+    flash2_done = true;
+    flash_walls = true;
 }
 
 void load_textures() {
@@ -178,7 +201,7 @@ void load_textures() {
         std::cout << "error loading obstacle image\n";
     if (!background_texture.loadFromFile("../images/game_background_blue2.png"))
         std::cout << "error loading background image\n";
-    if (!arial_font.loadFromFile("../fonts/arial.ttf"))
+    if (!arial_font.loadFromFile("../fonts/Arial.otf"))
         std::cout << "error loading font\n";
     if (!bitmap_font.loadFromFile("../fonts/joystix_monospace.otf"))
         std::cout << "error loading bitmap font\n";
@@ -252,6 +275,29 @@ int get_wall_step(const float wall_y) {
     return 1;
 }
 
+//-20
+
+//20
+
+int get_wall_step2(const float wall_x) {
+    if(wall_x <= -10 && wall_x >= -1) {
+        return  2;
+    }
+    if(wall_x <= 0 && wall_x >= 5) {
+        return  3;
+    }
+    if(wall_x <= 6 && wall_x >= 7) {
+        return  4;
+    }
+    if(wall_x <= 8 && wall_x >= 10) {
+        return  3;
+    }
+    if(wall_x <= 11 && wall_x >= 14) {
+        return  2;
+    }
+    return 1;
+}
+
 sf::Vector2f prev_obstacle_pos;
 sf::Vector2f prev_small_obstacle_pos;
 
@@ -278,10 +324,18 @@ int main() {
     load_textures();
 
     // sounds
+
     sf::SoundBuffer buffer;
+    sf::SoundBuffer buffer2;
+
     if (!buffer.loadFromFile("../sounds/gamebouncesound.wav"))
          return -1;
+
+    if (!buffer2.loadFromFile("../sounds/blipSelect.wav"))
+        return -1;
+
     sf::Sound bounce_sound;
+    sf::Sound end_sound;
 
     //music
     sf::Music music;
@@ -298,7 +352,7 @@ int main() {
     // float y = 240;
     // int x2, y2;
 
-    while (true) {    
+    while (true) {
     x2 = dist(gen);
     y2 = dist1(gen);
         if (x2 <= 100 || x2 >= 540)
@@ -319,7 +373,7 @@ int main() {
     int window_x = 640;
     int window_y = 480;*/
 
-    // create window 
+    // create window
     //sf::RenderWindow window(sf::VideoMode(640, 480),"My window", sf::Style::Close);
     sf::RenderWindow window(sf::VideoMode(window_x, window_y),"Bounce game", sf::Style::Titlebar | sf::Style::Close);
     window.setPosition(sf::Vector2i(50, 50));
@@ -371,7 +425,7 @@ int main() {
     };
 
     // game walls
-    
+
     // wall 1
     sf::RectangleShape wall1(sf::Vector2f(640.0f, 20.0f));
     wall1.setOrigin(0, 0);
@@ -384,11 +438,44 @@ int main() {
     wall2.setPosition(0, -20);
     wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha)); // wall_alpha
 
+    // 400 60
+
+    // wall 3
+    sf::RectangleShape wall3(sf::Vector2f(20.0f, 480.0f));
+    wall3.setOrigin(0,0);
+    wall3.setPosition(-20, 0); // -20 0
+    wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2));
+
+    // wall 4
+    sf::RectangleShape wall4(sf::Vector2f(20.0f, 480.0f));
+    wall4.setOrigin(0,0);
+    wall4.setPosition(640, 0); //
+    wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2));
+
+
+    //flash walls
+
+    sf::RectangleShape flashwall1(sf::Vector2f(640.0f, 20.0f));
+    flashwall1.setOrigin(0, 0);
+    flashwall1.setPosition(0, 480);
+
+    sf::RectangleShape flashwall2(sf::Vector2f(640.0f, 20.0f));
+    flashwall2.setOrigin(0, 0);
+    flashwall2.setPosition(0, -20);
+
+    sf::RectangleShape flashwall3(sf::Vector2f(20.0f, 480.0f));
+    flashwall3.setOrigin(0, 0);
+    flashwall3.setPosition(-20, 0);
+
+    sf::RectangleShape flashwall4(sf::Vector2f(20.0f, 480.0f));
+    flashwall4.setOrigin(0, 0);
+    flashwall4.setPosition(640, 0);
+
     // again text
 
     sf::Text again_text;
-    again_text.setFont(bitmap_font);
-    again_text.setString("PRESS N TO RESTART");
+    again_text.setFont(arial_font);
+    again_text.setString("PRESS ENTER TO RESTART");
     again_text.setCharacterSize(20);
     again_text.setFillColor(sf::Color::White);
     again_text.setOrigin(0,0);
@@ -399,18 +486,20 @@ int main() {
     std::string counter_text = "COUNTER: ";
     //std::string str = std::to_string(b);
     sf::Text bcounter_text;
-    bcounter_text.setFont(bitmap_font);
+
+    bcounter_text.setFont(arial_font);
 
     //
     bcounter_text.setPosition(0, 0);
     bcounter_text.setCharacterSize(20);
     bcounter_text.setFillColor(sf::Color::White);
+    //bcounter_text.setOutlineThickness(0.5f);
 
     // fps counter
 
     std::string fps_counter_text = "FPS: ";
     sf::Text fps_text;
-    fps_text.setFont(bitmap_font);
+    fps_text.setFont(arial_font);
 
     fps_text.setPosition(470, 0);
     fps_text.setCharacterSize(20);
@@ -468,10 +557,21 @@ int main() {
     sf::Sprite game_background;
     game_background.setTexture(background_texture);
     game_background.setScale(sf::Vector2f(8, 8));
+    game_background.setColor(sf::Color(255,255,255, background_alpha));
 
     sf::Clock clock;
 
+    sf::View view = window.getDefaultView();
+
     while (window.isOpen()) {
+
+        //update flashwall color
+        flashwall1.setFillColor(sf::Color(255, 0, 0, flashwall_alpha));
+        flashwall2.setFillColor(sf::Color(255, 0, 0, flashwall_alpha));
+        flashwall3.setFillColor(sf::Color(255, 0, 0, flashwall_alpha));
+        flashwall4.setFillColor(sf::Color(255, 0, 0, flashwall_alpha));
+
+        game_background.setColor(sf::Color(255,255,255, background_alpha));
 
         // fps calculation
         float current_time = clock.restart().asSeconds();
@@ -489,9 +589,9 @@ int main() {
         //std::cout << "timer 4: " << timer_4 << std::endl;
         //std::cout << "current time: " << current_time << std::endl;
 
-        window.setFramerateLimit(60);
+        window.setFramerateLimit(360);
         //window.setVerticalSyncEnabled(true);
-        
+
         sf::Event event;
 
         // timer 4
@@ -526,6 +626,12 @@ int main() {
 
 
         while (window.pollEvent(event)) {
+
+            /*if (event.type == sf::Event::Resized) {
+                view.setSize(event.size.width, event.size.height);
+                window.setView(view);
+            }
+            */
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::F) {
                 timer_start4 = true;
@@ -613,11 +719,13 @@ int main() {
 
             //std::cout << "window res: " << window_res << std::endl;
 
+            //resize window
+
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && menu_screen2 && selected_menu_item == 4 && (timer_5 > 1)) {
                 window.setSize(sf::Vector2u(window_x = window_x+window_x*0.25, window_y = window_y+window_y*0.25));
                 window_res++;
-
                 timer_start5 = false;
+                //bcounter_text.setCharacterSize(static_cast<unsigned int>(window.getSize().y / 40));
 
             }
 
@@ -634,13 +742,19 @@ int main() {
 
             // restart game
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::N && intersected1 == true) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Backspace && intersected1 == true) {
                 reset_variables();
                 obstacle.setPosition(x2, y2);
                 obstacle3.setPosition(x2-30, y2-30);
                 player.setPosition(x, y);
                 wall1.setPosition(0, 480);
                 wall2.setPosition(0, -20);
+                wall3.setPosition(-20, 0);
+                wall4.setPosition(640, 0);
+                flashwall1.setPosition(0, 480);
+                flashwall2.setPosition(0, -20);
+                flashwall3.setPosition(-20, 0);
+                flashwall4.setPosition(640, 0);
                 randomside = dist2(gen);
                 while (true) {
                     x2 = static_cast<float>(dist(gen));
@@ -763,6 +877,12 @@ int main() {
                 player.setPosition(x, y);
                 wall1.setPosition(0, 480);
                 wall2.setPosition(0, -20);
+                wall3.setPosition(-20, 0);
+                wall4.setPosition(640, 0);
+                flashwall1.setPosition(0, 480);
+                flashwall2.setPosition(0, -20);
+                flashwall3.setPosition(-20, 0);
+                flashwall4.setPosition(640, 0);
                 randomside = dist2(gen);
                 while (true) {
                     x2 = static_cast<float>(dist(gen));
@@ -972,12 +1092,20 @@ int main() {
             //std::cout << "b_a: "<< b_a << std::endl;
             //std::cout << "walls y positions: " << wall1.getPosition().y << ", " << wall2.getPosition().y << std::endl;
             //std::cout << "current time: " << current_time << std::endl;
-            //std::cout << timer_4 << std::endl;
+            //std::cout << timer_9 << std::endl;
             //std::cout << obstacle3_shot << std::endl;
             //std::cout << "obstacle3 speed: " << obstacle3_speed << std::endl;
             //std::cout << "obstacle3 shot: " << obstacle3_shot << std::endl;
             //std::cout << "player1 alpha: " << player1_alpha << std::endl;
             //std::cout << "player2 alpha: " << player2_alpha << std::endl;
+            //std::cout << "wall3 position: " << wall3.getPosition().x << std::endl;
+            //std::cout << "wall4 position: " << wall4.getPosition().x << ", " << wall4.getPosition().y << std::endl;
+            //std::cout << "wall alpha 2: " << wall_alpha2 << std::endl;
+            //std::cout << "wall alpha 1: " << wall_alpha << std::endl;
+            //std::cout << b_a2 << std::endl;
+            //std::cout << "flash wall alpha: " << flashwall_alpha << std::endl;
+            //std::cout << "flashwall3 position: " << flashwall3.getPosition().x << std::endl;
+            //std::cout << player.getPosition().x << std::endl;
 
 
             // increase obstacle speed
@@ -1084,7 +1212,7 @@ int main() {
             if (found_diagonal)
                 if (obstacle3.getPosition().x > 0 || obstacle3.getPosition().y > 0 || obstacle3.getPosition().x < 640 || obstacle3.getPosition().y < 480) {
                     obstacle3.move(n*a_m*obstacle3_speed, m*a_m*obstacle3_speed);
-                    std::cout << "shoot" << std::endl;
+                    //std::cout << "shoot" << std::endl;
                     timer_start7 = true;
 
 
@@ -1164,10 +1292,12 @@ int main() {
 
             sf::FloatRect wall1_box = wall1.getGlobalBounds();
             sf::FloatRect wall2_box = wall2.getGlobalBounds();
+            sf::FloatRect wall3_box = wall3.getGlobalBounds();
+            sf::FloatRect wall4_box = wall4.getGlobalBounds();
 
             // check collision with player and walls
 
-            if ((player_box.intersects(wall1_box) || (player_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done && !player_invincibility) {
+            if (((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1) && wall_move_done && !player_invincibility) {
                 if (multiplayer_mode) {
                     player1_dead = true;
                 }
@@ -1176,14 +1306,14 @@ int main() {
                 }
             }
 
-            if ((player2_box.intersects(wall1_box) || (player2_box.intersects(wall2_box))) && b>b_a-1 && wall_move_done && !player_invincibility) {
-                if (multiplayer_mode) {
-                    player2_dead = true;
-                }
-                else {
-                    intersected1 = true;
-                }
-            }
+            if (((player2_box.intersects(wall1_box) || player2_box.intersects(wall2_box)) && b>b_a-1) || ((player2_box.intersects(wall3_box) || player2_box.intersects(wall4_box)) && b>b_a2-1) && wall_move_done && !player_invincibility) {
+                 if (multiplayer_mode) {
+                     player2_dead = true;
+                 }
+                 else {
+                     intersected1 = true;
+                 }
+             }
 
             // check collision with obstacle1 and obstacle2
 
@@ -1199,7 +1329,7 @@ int main() {
                 // std::cout << "obstacle right side: " << o_r << std::endl;
                 // std::cout << "obstacle left side: " << o_l << std::endl;
 
-                std::cout << "\n";
+                //std::cout << "\n";
 
                 auto o2_r = obstacle2.getPosition().x+20;
                 auto o2_l = obstacle2.getPosition().x-20;
@@ -1212,7 +1342,7 @@ int main() {
 
                 //bounce left or right
                 if (std::abs(o_l-o2_r) <= 20 || std::abs(o_r-o2_l) <= 20) {
-                    std::cout << "move x\n";
+                    //std::cout << "move x\n";
                     obstacle_x = -obstacle_x;
                     if (obstacle.getPosition().x > prev_obstacle_pos.x) {
                         obstacle.setPosition(obstacle.getPosition().x-5, obstacle.getPosition().y);
@@ -1225,7 +1355,7 @@ int main() {
                 }
                 //bounce up or down
                 else {
-                    std::cout << "move y\n";
+                    //std::cout << "move y\n";
                     obstacle_y = -obstacle_y;
                     if (obstacle.getPosition().y > prev_obstacle_pos.y) {
                         obstacle.setPosition(obstacle.getPosition().x, obstacle.getPosition().y-5);
@@ -1241,7 +1371,7 @@ int main() {
                 //obstacle2.setPosition(obstacle2.getPosition().x+1, obstacle2.getPosition().y+1);
                 //auto obstacle_position = obstacle.getPosition();
 
-                std::cout  << "obstacle global bounds top: " << obstacle.getGlobalBounds().top << std::endl;
+                //std::cout  << "obstacle global bounds top: " << obstacle.getGlobalBounds().top << std::endl;
 
                 bounce_sound.setBuffer(buffer);
                 bounce_sound.play();
@@ -1281,7 +1411,7 @@ int main() {
                 }
                 if (player1_alpha < 100) {
                     player.setPosition(-1000, 0);
-                    std::cout << "player1 moved" << std::endl;
+                    //std::cout << "player1 moved" << std::endl;
 
                 }
             }
@@ -1303,6 +1433,12 @@ int main() {
                 intersected1 = true;
             }
 
+            if (intersected1 && !end_sound_played) {
+                end_sound_played = true;
+                end_sound.setBuffer(buffer2);
+                end_sound.play();
+            }
+
 
 
             //if ()
@@ -1311,15 +1447,21 @@ int main() {
                 //timer_2++;
                 timer_2 = timer_2 + a_m;
 
-            if (timer_start3) // && b < 20
+            if (wall_timer_start) // && b < 20
                 //timer_3++;
-                timer_3 = timer_3 + a_m;
+                wall_timer = wall_timer + a_m;
+
+            if (wall_timer_start2)
+                wall_timer2 = wall_timer2 + a_m;
 
             if (timer_start7)
                 timer_7 = timer_7 + a_m;
 
             if (timer_start8)
                 timer_8 = timer_8 + a_m;
+
+            if (timer_start9)
+                timer_9 = timer_9 + a_m;
 
             // wall move timer
 
@@ -1329,58 +1471,100 @@ int main() {
             if (obstacle3_shot%1 == 0 && !initialized2 && found_diagonal) {
                 initialized2 = true;
                 obstacle3_speed = obstacle3_speed + 0.2;
-                std::cout << "increase speed" << std::endl;
+                //std::cout << "increase speed" << std::endl;
             }
 
 
 
-            // wall danger indicator
+            // walls 1, 2 danger indicator
 
             if (b >= b_a-3 && !wall_move_done) {
-                wall_alpha = 50;
+                wall_alpha = 30;
                 wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha));
                 wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha));
-                std::cout << "wall danger indicator" << std::endl;
-                timer_start3 = true;
-                std::cout << "timer start: " << timer_start3 << std::endl;
+                //std::cout << "wall danger indicator" << std::endl;
+                wall_timer_start = true;
+                //std::cout << "timer start: " << wall_timer_start << std::endl;
                 wall1.setPosition(0, 400);
                 wall2.setPosition(0, 60);
 
-                if (timer_3 >= 30) {
-                    std::cout << "move walls" << std::endl;
+                if (wall_timer >= 30) {
+                    //std::cout << "move walls" << std::endl;
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
                     //wall_move_done = true;
                 }
-                if (timer_3 >= 60) {
+                if (wall_timer >= 60) {
                     wall1.setPosition(0, 400);
                     wall2.setPosition(0, 60);
+
                 }
-                if (timer_3 >= 90) {
+                if (wall_timer >= 90) {
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
                 }
-                if (timer_3 >= 120) {
-                    std::cout << "walls move done" << std::endl;
-                    timer_start3 = false;
-                    timer_3 = 1;
+                if (wall_timer >= 120) {
+                    //std::cout << "walls move done" << std::endl;
+                    wall_timer_start = false;
+                    wall_timer = 1;
                     wall_move_done = true;
                 }
             }
+            // walls 3, 4 danger indicator
 
-            // walls appearance
+            if (b >= b_a2-3 && !wall_move_done2) {
+                wall_alpha2 = 30;
+                wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2));
+                wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2));
+                //std::cout << "wall danger indicator" << std::endl;
+                wall_timer_start2 = true;
+                //std::cout << "timer start2: " << wall_timer_start2 << std::endl;
+                wall3.setPosition(20, 0);
+                wall4.setPosition(600, 0);
+
+                if (wall_timer2 >= 30) {
+                    //std::cout << "move walls" << std::endl;
+                    wall3.setPosition(-20, 0);
+                    wall4.setPosition(640, 0);
+                    //wall_move_done = true;
+                }
+                if (wall_timer2 >= 60) {
+                    wall3.setPosition(20, 0);
+                    wall4.setPosition(600, 0);
+                }
+                if (wall_timer2 >= 90) {
+                    wall3.setPosition(-20, 0);
+                    wall4.setPosition(640, 0);
+                }
+                if (wall_timer2 >= 120) {
+                    //std::cout << "walls move done" << std::endl;
+                    wall_timer_start2 = false;
+                    wall_timer2 = 1;
+                    wall_move_done2 = true;
+                }
+            }
+
+            // walls 1, 2 appearance
 
             if (b >= b_a) {
+
+                //std::cout << "walls 1, 2 appearance" << std::endl;
 
                 //std::cout << "moving walls" << std::endl;
                 const auto wall1_y = wall1.getPosition().y;
                 const auto wall2_y = wall2.getPosition().y;
 
-                if (wall1_y > 400 && wall2_y < 60) {
+                if ((wall1_y > 400) && (wall2_y < 60)) {
                     const auto wall1_step = get_wall_step(wall1_y);
                     //std::cout << "wall step" << -wall1_step << std::endl;
                     wall1.move(0, -wall1_step * a_m);
                     wall2.move(0, wall1_step * a_m);
+
+                    flashwall1.setPosition(wall1.getPosition());
+                    flashwall2.setPosition(wall2.getPosition());
+
+                    //flashwall1.move(0, -wall1_step * a_m);
+                    //flashwall2.move(0, wall1_step * a_m);
                 }
 
                 if (b >= b_a+20 && wall_alpha > 0) {
@@ -1391,14 +1575,92 @@ int main() {
 
                 }
                 if (b >= b_a+20 && wall_alpha == 0) { // b_a < b_a+20 && wall_alpha == 0 && !add_b_a
-                    std::cout << "set walls positions " << std::endl;
+                    //std::cout << "set walls positions " << std::endl;
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
+
+                    flashwall1.setPosition(wall1.getPosition());
+                    flashwall2.setPosition(wall2.getPosition());
+
+                    //flashwall1.setPosition(0, 480);
+                    //flashwall2.setPosition(0, -20);
+
                     b_a = b_a + 40;
                     wall_move_done = false;
                 }
 
             }
+
+            // walls 3, 4 appearance
+
+            if (b >= b_a2) {
+
+                //std::cout << "walls 3, 4 appearance" << std::endl;
+
+                const auto wall3_x = wall3.getPosition().x;
+                const auto wall4_x = wall4.getPosition().x;
+
+                if ((wall3_x < 20) && (wall4_x > 600)) {
+                    const auto wall3_step = get_wall_step(wall3_x);
+                    wall3.move(wall3_step*a_m, 0);
+                    wall4.move(-wall3_step*a_m, 0);
+
+                    flashwall3.setPosition(wall3.getPosition());
+                    flashwall4.setPosition(wall4.getPosition());
+
+                    //flashwall3.move(wall3_step*a_m, 0);
+                    //flashwall4.move(-wall3_step*a_m, 0);
+                }
+
+                if (b >= b_a2+20 && wall_alpha2 > 0) {
+                    wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.5));
+                    wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.5));
+                    //wall_alpha2 = wall_alpha2 - 0.5;
+                }
+                if (b >= b_a2+20 && wall_alpha2 == 0) {
+                    wall3.setPosition(-20, 0);
+                    wall4.setPosition(640, 0);
+
+                    flashwall3.setPosition(wall3.getPosition());
+                    flashwall4.setPosition(wall4.getPosition());
+
+                    //flashwall3.setPosition(-20, 0);
+                    //flashwall4.setPosition(640, 0);
+
+                    b_a2 = b_a2 + 40;
+                    wall_move_done2 = false;
+                }
+
+            }
+
+            //walls flashing
+
+            if (flash_walls) {
+                if (flashwall_alpha > 30 && !flash1_done) {
+                    flashwall_alpha=flashwall_alpha-0.1;
+                }
+                if (flashwall_alpha < 30) {
+                    flash1_done = true;
+                    timer_start9 = true;
+                    if (timer_9 > 30) {
+                        timer_start9 = false;
+                        flash2_done = false;
+                    }
+                }
+                if (flashwall_alpha < 50 && !flash2_done) {
+                    flashwall_alpha=flashwall_alpha+0.1;
+                }
+                if (flashwall_alpha == 50) {
+                    flash1_done = false;
+                    flash2_done =  true;
+                }
+            }
+
+            /*if (player.getPosition().x < player_x) {
+                std::cout << "decreasing" << std::endl;
+            }
+            */
+            //change background alpha depending on player position
 
             // duplicate obstacle
 
@@ -1487,7 +1749,6 @@ int main() {
             int distance_min_y = std::abs(obstacle.getPosition().y - 0);
 
             //std::cout << distance_max_x << std::endl;
-
             //std::cout << "minimum distance: " << std::min(distance_max_x, distance_max_y, distance_min_x, distance_min_y) << std::endl;
             if (diagonal_rotating) {
                 if (std::min({distance_max_x, distance_max_y, distance_min_x, distance_min_y}) == distance_max_x) {
@@ -1522,11 +1783,6 @@ int main() {
                 obstacle3_collision = true;
             }
 
-            //std::cout << "b_m: "<< b_m << std::endl;
-            //std::cout << "b: "<< b << std::endl;
-
-            //std::cout << "search diagonal: " << search_diagonal << std::endl;
-
             // makewhitebox(20);
             float i = 0.0;
             float j = 0.0;
@@ -1560,6 +1816,13 @@ int main() {
         window.draw(obstacle);
         window.draw(wall1);
         window.draw(wall2);
+        window.draw(bcounter_text);
+        window.draw(wall3);
+        window.draw(wall4);
+        window.draw(flashwall1);
+        window.draw(flashwall2);
+        window.draw(flashwall3);
+        window.draw(flashwall4);
 
         //box_renderer();
         //window.draw();
@@ -1570,8 +1833,9 @@ int main() {
         if (new_obstacle2 == true)
             window.draw(obstacle2);
         if (intersected1 == true)
-            window.draw(again_text);
-        window.draw(bcounter_text);
+            //window.draw(again_text);
+        //window.draw(bcounter_text);
+
         if (show_fps == true)
             window.draw(fps_text);
         if (game_start == false) {
