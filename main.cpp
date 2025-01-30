@@ -103,7 +103,7 @@ bool flash_walls = true;
 bool flash1_done = false;
 bool flash2_done = true;
 bool sound_on = false;
-float background_alpha = 200;
+float background_alpha = 255;
 float player_x;
 
 
@@ -1832,7 +1832,7 @@ int main() {
             window.draw(player2);
         if (new_obstacle2 == true)
             window.draw(obstacle2);
-        if (intersected1 == true)
+        //if (intersected1 == true)
             //window.draw(again_text);
         //window.draw(bcounter_text);
 
