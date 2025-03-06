@@ -103,7 +103,6 @@ bool sound_on = true;
 float background_alpha = 255;
 float player_x;
 
-
 // textures
 
 sf::Texture player_texture;
