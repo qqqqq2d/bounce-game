@@ -105,7 +105,6 @@ float player_x;
 
 // textures
 
-
 sf::Texture player_texture;
 sf::Texture player2_texture;
 sf::Texture obstacle_texture;
