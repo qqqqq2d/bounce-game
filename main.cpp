@@ -1,4 +1,3 @@
-#include <chrono>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -6,10 +5,7 @@
 #include <random>
 #include <string>
 #include <cmath>
-#include <iomanip>
-#include <format>
 
-bool executed_1 = false;
 bool intersected1 = false;
 bool o2_start_moving = false;
 bool player_wall1_move = true;
@@ -17,22 +13,22 @@ float timer_2 = 1;
 bool timer_start2 = false;
 float wall_timer = 1;
 bool wall_timer_start = false;
-
 float wall_timer2 = 1;
 bool wall_timer_start2 = false;
-
-float timer_4 = 1;
+float timer_4 = 1; // used for button
 float timer_5 = 1;
 float timer_6 = 1;
 float timer_7 = 1;
 float timer_8 = 1;
 float timer_9 = 1;
+float timer_10 = 2; // used for button
 bool timer_start4 = false;
 bool timer_start5 = false;
 bool timer_start6 = false;
 bool timer_start7 = false;
 bool timer_start8 = false;
 bool timer_start9 = false;
+bool timer_start10 = false;
 bool new_obstacle2 = false;
 bool duplicate_done = false;
 bool no_o_collision = false;
@@ -54,6 +50,7 @@ int window_res = 0;
 int s_i = 10;
 bool window_res_on;
 bool button_toggle = false;
+bool audio_button_toggle = true;
 bool multiplayer_mode;
 float x = 320;
 float y = 240;
@@ -102,7 +99,7 @@ bool end_sound_played = false;
 bool flash_walls = true;
 bool flash1_done = false;
 bool flash2_done = true;
-bool sound_on = false;
+bool sound_on = true;
 float background_alpha = 255;
 float player_x;
 
@@ -134,10 +131,13 @@ sf::Texture obstacle_small_texture;
 sf::Texture white_rectangle;
 sf::Font arial_font;
 sf::Font bitmap_font;
-
+sf::Texture audio_button_on;
+sf::Texture audio_button_diff;
+sf::Texture audio_button1;
+sf::Texture audio_button2;
+sf::Texture menu_button_2players_texture_on_diff;
 
 void reset_variables() {
-    executed_1 = false;
     intersected1 = false;
     o2_start_moving = false;
     player_wall1_move = true;
@@ -239,7 +239,16 @@ void load_textures() {
         std::cout << "error loading menu image\n";
     if (!menu_button_resize_texture_diff.loadFromFile("../images/menu_button_resize_deselected.png"))
         std::cout << "error loading menu image\n";
-
+    if (!audio_button_on.loadFromFile("../images/audio_button_on.png"))
+        std::cout << "error loading menu image\n";
+    if (!audio_button_diff.loadFromFile("../images/audio_button_deselected.png"))
+        std::cout << "error loading menu image\n";
+     if (!audio_button1.loadFromFile("../images/audio_button.png"))
+        std::cout << "error loading menu image\n";
+    if (!audio_button2.loadFromFile("../images/audio_button_on_on.png"))
+        std::cout << "error loading menu image\n";
+    if (!menu_button_2players_texture_on_diff.loadFromFile("../images/menu_button_2players_on_on.png"))
+        std::cout << "error loading menu image\n";
 }
 
 //wall_y = 480..400
@@ -319,22 +328,43 @@ std::vector<sf::Sprite> create_white_boxes(const int count) {
     return result;
 }
 
+sf::Sound bounce_sound;
+sf::Sound end_sound;
+
+sf::SoundBuffer buffer;
+sf::SoundBuffer buffer2;
+
+
+void bouncesound(){
+    if (sound_on){
+        bounce_sound.setBuffer(buffer);
+        bounce_sound.play();
+    }
+}
+
+void endsound(){
+    if (sound_on){
+        end_sound_played = true;
+        end_sound.setBuffer(buffer2);
+        end_sound.play();
+    }
+}
+
 int main() {
 
     load_textures();
 
     // sounds
 
-    sf::SoundBuffer buffer;
-    sf::SoundBuffer buffer2;
 
-    if (!buffer.loadFromFile("../sounds/gamebouncesound.wav"))
-         return -1;
-
-    if (!buffer2.loadFromFile("../sounds/blipSelect.wav"))
+    if (sound_on) {
+        if (!buffer.loadFromFile("../sounds/gamebouncesound.wav"))
+            return -1;
+    }
+    if (sound_on) {
+        if (!buffer2.loadFromFile("../sounds/blipSelect.wav"))
         return -1;
-
-    sf::Sound bounce_sound;
+    }
     sf::Sound end_sound;
 
     //music
@@ -559,6 +589,12 @@ int main() {
     game_background.setScale(sf::Vector2f(8, 8));
     game_background.setColor(sf::Color(255,255,255, background_alpha));
 
+    sf::Sprite audio_button;
+    audio_button.setTexture(audio_button_on);
+    audio_button.setPosition(0, 320);
+    audio_button.setScale(sf::Vector2f(button_scale.x, button_scale.y));
+
+
     sf::Clock clock;
 
     sf::View view = window.getDefaultView();
@@ -586,7 +622,7 @@ int main() {
         window.setKeyRepeatEnabled(false);
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
         //std::cout << "button toggle: " << button_toggle << std::endl;
-        //std::cout << "timer 4: " << timer_4 << std::endl;
+        //std::cout << "timer 10: " << timer_10 << std::endl;
         //std::cout << "current time: " << current_time << std::endl;
 
         window.setFramerateLimit(360);
@@ -599,6 +635,10 @@ int main() {
         if (timer_start4 && timer_4 < 2)
             //timer_4++;
             timer_4 = timer_4 + a_m;
+
+        if (timer_start10 && timer_10 < 2)
+            timer_10 = timer_10 + a_m;
+
 
         if (timer_start5 && timer_5 < 2)
             //timer_4++;
@@ -672,7 +712,7 @@ int main() {
                 timer_start5 = true;
 
                 menu_screen2 = true;
-                highest_selected = 5;
+                highest_selected = 6;
                 lowest_selected = 4;
                 selected_menu_item = 4;
             }
@@ -715,6 +755,22 @@ int main() {
                 timer_start4 = false;
                 timer_4 = 1;
                 multiplayer_mode = false;
+            }
+
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !audio_button_toggle && menu_screen2 && selected_menu_item == 6) {
+                timer_start10 = true;
+                std::cout << "toggled button" << std::endl;
+                std::cout << "button on: " << button_toggle << std::endl;
+                audio_button_toggle = true;
+                sound_on = true;
+            }
+
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 6 && timer_10 > 1) {
+                audio_button_toggle = false;
+                std::cout << "toggled off" << std::endl;
+                timer_start10 = false;
+                timer_10 = 1;
+                sound_on = false;
             }
 
             //std::cout << "window res: " << window_res << std::endl;
@@ -769,7 +825,6 @@ int main() {
                 player2.setColor(sf::Color(255,255,255,player2_alpha));
                 /*x = 320;
                 y = 240;
-                executed_1 = false;
                 intersected1 = false;
                 o2_start_moving = false;
                 obstacle.setPosition(x2, y2);
@@ -841,7 +896,7 @@ int main() {
         else {
             menu_button4.setTexture(menu_button_resize_texture_diff);
         }
-        if (selected_menu_item == 5) {
+        if (selected_menu_item == 5 && !button_toggle) {
             menu_button5.setTexture(menu_button_2players_texture);
         }
         else {
@@ -849,6 +904,21 @@ int main() {
         }
         if (button_toggle) {
             menu_button5.setTexture(menu_button_2players_texture_on);
+        }
+        if (selected_menu_item == 5 && button_toggle){
+            menu_button5.setTexture(menu_button_2players_texture_on_diff);
+        }
+        if (selected_menu_item == 6 && !audio_button_toggle){
+            audio_button.setTexture(audio_button1);
+        }
+        else {
+            audio_button.setTexture(audio_button_diff);
+        }
+        if (audio_button_toggle){
+            audio_button.setTexture(audio_button_on);
+        }
+        if (selected_menu_item == 6 && audio_button_toggle){
+            audio_button.setTexture(audio_button2);
         }
 
         // print out player position
@@ -996,31 +1066,27 @@ int main() {
                     obstacle_y = -obstacle_y;
                     obstacle3_y = -obstacle3_y;
                     b++;
-                    bounce_sound.setBuffer(buffer);
-                    bounce_sound.play();
+                    bouncesound();
                     //timer_start = true;
                 }
                 if (obstacle.getPosition().x > 620) {
                     obstacle_x = -obstacle_x;
                     obstacle3_x = -obstacle3_x;
                     b++;
-                    bounce_sound.setBuffer(buffer);
-                    bounce_sound.play();
+                    bouncesound();
                 }
                 if (obstacle.getPosition().y < 0 + obstacle.getOrigin().y) {
                     obstacle_y = -obstacle_y;
                     obstacle3_y = -obstacle3_y;
                     b++;
-                    bounce_sound.setBuffer(buffer);
-                    bounce_sound.play();
+                    bouncesound();
                     //timer_start = true;
                 }
                 if (obstacle.getPosition().x < 0 + obstacle.getOrigin().x) {
                     obstacle_x = -obstacle_x;
                     obstacle3_x = -obstacle3_x;
                     b++;
-                    bounce_sound.setBuffer(buffer);
-                    bounce_sound.play();
+                    bouncesound();
                 }
 
                 // small obstacle bouncing
@@ -1047,28 +1113,24 @@ int main() {
                     if (obstacle2.getPosition().y > 460) {
                         obstacle2_y = -obstacle2_y;
                         b++;
-                        bounce_sound.setBuffer(buffer);
-                        bounce_sound.play();
+                        bouncesound();
                         //timer_start = true;
                     }
                     if (obstacle2.getPosition().x > 620) {
                         obstacle2_x = -obstacle2_x;
                         b++;
-                        bounce_sound.setBuffer(buffer);
-                        bounce_sound.play();
+                        bouncesound();
                     }
                     if (obstacle2.getPosition().y < 0 + obstacle2.getOrigin().y) {
                         obstacle2_y = -obstacle2_y;
                         b++;
-                        bounce_sound.setBuffer(buffer);
-                        bounce_sound.play();
+                        bouncesound();
                         //timer_start = true;
                     }
                     if (obstacle2.getPosition().x < 0 + obstacle2.getOrigin().x) {
                         obstacle2_x = -obstacle2_x;
                         b++;
-                        bounce_sound.setBuffer(buffer);
-                        bounce_sound.play();
+                        bouncesound();
                     }
 
                 }
@@ -1173,7 +1235,6 @@ int main() {
                     //obstacle_y--;
                 }
 
-                executed_1 = true;
                 prev_b = b;
 
             }
@@ -1434,9 +1495,7 @@ int main() {
             }
 
             if (intersected1 && !end_sound_played) {
-                end_sound_played = true;
-                end_sound.setBuffer(buffer2);
-                end_sound.play();
+                endsound();
             }
 
 
@@ -1848,6 +1907,7 @@ int main() {
             window.draw(menu2);
             window.draw(menu_button4);
             window.draw(menu_button5);
+            window.draw(audio_button);
         }
 
         window.display();
