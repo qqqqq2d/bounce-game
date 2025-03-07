@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
 #include <iostream>
+#include <iterator>
 #include <random>
 #include <string>
 #include <cmath>
@@ -102,6 +103,9 @@ bool flash2_done = true;
 bool sound_on = true;
 float background_alpha = 255;
 float player_x;
+bool music_timer_start = true;
+float music_timer = 0;
+bool music_played = false;
 
 // textures
 
@@ -349,6 +353,18 @@ void endsound(){
     }
 }
 
+std::random_device seed;
+std::mt19937 gen{seed()};
+
+std::uniform_int_distribution<> dist{100, 540};
+std::uniform_int_distribution<> dist1{100, 340};
+std::uniform_int_distribution<> dist2{0, 1};
+
+std::uniform_int_distribution<> musicdist{1, 10};
+
+int music_multiplier = musicdist(gen);
+int choose_music = dist2(gen);
+
 int main() {
 
     load_textures();
@@ -357,25 +373,36 @@ int main() {
 
 
     if (sound_on) {
-        if (!buffer.loadFromFile("../sounds/gamebouncesound.wav"))
+        if (!buffer.loadFromFile("../sounds/bouncesound.wav"))
             return -1;
     }
-    if (sound_on) {
+    if (false) {
         if (!buffer2.loadFromFile("../sounds/blipSelect.wav"))
         return -1;
     }
     sf::Sound end_sound;
 
-    //music
+    /*//music
     sf::Music music;
     if (!music.openFromFile("../sounds/gamebackgroundmusic.wav"))
+        return -1;*/
+
+    //music
+    
+    sf::Music musictrack1;
+    if (!musictrack1.openFromFile("../sounds/bouncegametrack1.wav"))
         return -1;
 
-    std::random_device seed;
-    std::mt19937 gen{seed()};
-    std::uniform_int_distribution<> dist{100, 540};
-    std::uniform_int_distribution<> dist1{100, 340};
-    std::uniform_int_distribution<> dist2{0, 1};
+    sf::Music musictrack2;
+    if (!musictrack2.openFromFile("../sounds/bouncegametrack2.wav"))
+        return -1;
+
+    bounce_sound.setPitch(1.2f);
+    bounce_sound.setVolume(10.f);
+
+    musictrack1.setVolume(20.f);
+    musictrack2.setVolume(20.f);
+
 
     // float x = 320;
     // float y = 240;
@@ -618,11 +645,18 @@ int main() {
 
         float a_m = current_time * mp;
 
+        //debug2
+
         window.setKeyRepeatEnabled(false);
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
         //std::cout << "button toggle: " << button_toggle << std::endl;
         //std::cout << "timer 10: " << timer_10 << std::endl;
         //std::cout << "current time: " << current_time << std::endl;
+        //std::cout << music.getStatus() << std::endl;
+        //std::cout << "music timer: " << music_timer << std::endl;
+        //std::cout << 200*music_multiplier << std::endl;
+        //std::cout << choose_music << std::endl;
+
 
         window.setFramerateLimit(360);
         //window.setVerticalSyncEnabled(true);
@@ -648,6 +682,44 @@ int main() {
 
         if (player_move_timer_start)
             player_move_timer = player_move_timer - a_m;
+        
+        //music timer
+        if (music_timer_start) {
+            music_timer = music_timer + a_m;
+        }
+
+        //music start
+        if (music_timer > 200*music_multiplier && !music_played){
+        std::cout << "play music" << std::endl;
+        
+            if (choose_music == 1){
+                musictrack1.play();
+            }
+
+            else {
+                musictrack2.play();
+            }
+
+            music_played = true;
+            music_timer_start = false;
+            music_timer = 0;
+        }
+
+        if (((musictrack1.getStatus() == 0) && (musictrack2.getStatus() == 0)) && music_played){
+            music_played = false;
+            music_timer_start = true;
+            music_multiplier = musicdist(gen);
+        }
+
+        if (!sound_on){
+            musictrack1.setVolume(0);
+            musictrack2.setVolume(0);
+        }
+        else {
+            musictrack1.setVolume(20.f);
+            musictrack2.setVolume(20.f);
+        }
+
 
         // debug key
 
