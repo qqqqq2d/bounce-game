@@ -6,6 +6,7 @@
 #include <random>
 #include <string>
 #include <cmath>
+#include <format>
 
 bool intersected1 = false;
 bool o2_start_moving = false;
@@ -106,6 +107,8 @@ float player_x;
 bool music_timer_start = true;
 float music_timer = 0;
 bool music_played = false;
+int detected_counter = 0;
+int detected_counter1 = 0;
 
 // textures
 
@@ -343,6 +346,9 @@ void bouncesound(){
         bounce_sound.setBuffer(buffer);
         bounce_sound.play();
     }
+    detected_counter = 10;
+    detected_counter1 = 10;
+    
 }
 
 void endsound(){
@@ -398,10 +404,10 @@ int main() {
         return -1;
 
     bounce_sound.setPitch(1.2f);
-    bounce_sound.setVolume(10.f);
+    bounce_sound.setVolume(25.f);
 
-    musictrack1.setVolume(20.f);
-    musictrack2.setVolume(20.f);
+    musictrack1.setVolume(80.f);
+    musictrack2.setVolume(80.f);
 
 
     // float x = 320;
@@ -626,6 +632,10 @@ int main() {
     sf::View view = window.getDefaultView();
 
     while (window.isOpen()) {
+
+        detected_counter--;
+        detected_counter1--;
+
 
         //update flashwall color
         flashwall1.setFillColor(sf::Color(255, 0, 0, flashwall_alpha));
@@ -1132,34 +1142,35 @@ int main() {
 
 
                 // obstacle bouncing
-
-                if (obstacle.getPosition().y > 460) {
-                    obstacle_y = -obstacle_y;
-                    obstacle3_y = -obstacle3_y;
-                    b++;
-                    bouncesound();
-                    //timer_start = true;
+                if (detected_counter <= 0)
+                {
+                    if (obstacle.getPosition().y > 460) {
+                        obstacle_y = -obstacle_y;
+                        obstacle3_y = -obstacle3_y;
+                        b++;
+                        bouncesound();
+                        //timer_start = true;
+                    }
+                    if (obstacle.getPosition().x > 620) {
+                        obstacle_x = -obstacle_x;
+                        obstacle3_x = -obstacle3_x;
+                        b++;
+                        bouncesound();
+                    }
+                    if (obstacle.getPosition().y < 0 + obstacle.getOrigin().y) {
+                        obstacle_y = -obstacle_y;
+                        obstacle3_y = -obstacle3_y;
+                        b++;
+                        bouncesound();
+                        //timer_start = true;
+                    }
+                    if (obstacle.getPosition().x < 0 + obstacle.getOrigin().x) {
+                        obstacle_x = -obstacle_x;
+                        obstacle3_x = -obstacle3_x;
+                        b++;
+                        bouncesound();
+                    }
                 }
-                if (obstacle.getPosition().x > 620) {
-                    obstacle_x = -obstacle_x;
-                    obstacle3_x = -obstacle3_x;
-                    b++;
-                    bouncesound();
-                }
-                if (obstacle.getPosition().y < 0 + obstacle.getOrigin().y) {
-                    obstacle_y = -obstacle_y;
-                    obstacle3_y = -obstacle3_y;
-                    b++;
-                    bouncesound();
-                    //timer_start = true;
-                }
-                if (obstacle.getPosition().x < 0 + obstacle.getOrigin().x) {
-                    obstacle_x = -obstacle_x;
-                    obstacle3_x = -obstacle3_x;
-                    b++;
-                    bouncesound();
-                }
-
                 // small obstacle bouncing
 
                 /*if (obstacle3.getPosition().y > 460) {
@@ -1179,31 +1190,33 @@ int main() {
 
                 // obstacle2 bouncing
 
-                if (new_obstacle2 == true) {
+                if (detected_counter1 <= 0) {
 
-                    if (obstacle2.getPosition().y > 460) {
-                        obstacle2_y = -obstacle2_y;
-                        b++;
-                        bouncesound();
-                        //timer_start = true;
-                    }
-                    if (obstacle2.getPosition().x > 620) {
-                        obstacle2_x = -obstacle2_x;
-                        b++;
-                        bouncesound();
-                    }
-                    if (obstacle2.getPosition().y < 0 + obstacle2.getOrigin().y) {
-                        obstacle2_y = -obstacle2_y;
-                        b++;
-                        bouncesound();
-                        //timer_start = true;
-                    }
-                    if (obstacle2.getPosition().x < 0 + obstacle2.getOrigin().x) {
-                        obstacle2_x = -obstacle2_x;
-                        b++;
-                        bouncesound();
-                    }
+                    if (new_obstacle2 == true) {
 
+                        if (obstacle2.getPosition().y > 460) {
+                            obstacle2_y = -obstacle2_y;
+                            b++;
+                            bouncesound();
+                            //timer_start = true;
+                        }
+                        if (obstacle2.getPosition().x > 620) {
+                            obstacle2_x = -obstacle2_x;
+                            b++;
+                            bouncesound();
+                        }
+                        if (obstacle2.getPosition().y < 0 + obstacle2.getOrigin().y) {
+                            obstacle2_y = -obstacle2_y;
+                            b++;
+                            bouncesound();
+                            //timer_start = true;
+                        }
+                        if (obstacle2.getPosition().x < 0 + obstacle2.getOrigin().x) {
+                            obstacle2_x = -obstacle2_x;
+                            b++;
+                            bouncesound();
+                        }
+                    }
                 }
             }
 
