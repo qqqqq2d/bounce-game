@@ -537,11 +537,11 @@ int main() {
 
     sf::Text again_text;
     again_text.setFont(arial_font);
-    again_text.setString("PRESS ENTER TO RESTART");
-    again_text.setCharacterSize(20);
-    again_text.setFillColor(sf::Color::White);
+    again_text.setString("GAME OVER");
+    again_text.setCharacterSize(50);
+    again_text.setFillColor(sf::Color::Red);
     again_text.setOrigin(0,0);
-    again_text.setPosition(0, 459);
+    again_text.setPosition(170, 180);
 
     // bounce counter
 
@@ -700,7 +700,7 @@ int main() {
 
         //music start
         if (music_timer > 200*music_multiplier && !music_played){
-        std::cout << "play music" << std::endl;
+        //std::cout << "play music" << std::endl;
         
             if (choose_music == 1){
                 musictrack1.play();
@@ -734,7 +734,7 @@ int main() {
         // debug key
 
         if (sf::Keyboard::isKeyPressed(sf::Keyboard::T)) {
-            std::cout << "speed up game" << std::endl;
+            //std::cout << "speed up game" << std::endl;
             mp = 400;
         }
         else
@@ -769,7 +769,7 @@ int main() {
                 timer_start4 = true;
                 player_invincibility = true;
                 player.setColor(sf::Color(255, 255, 255, 64));
-                std::cout << "player invincibility on" << std::endl;
+                //std::cout << "player invincibility on" << std::endl;
             }
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::I && timer_4 > 1) {
@@ -777,7 +777,7 @@ int main() {
                 timer_start4 = false;
                 timer_4 = 1;
                 player.setColor(sf::Color(255, 255, 255, 255));
-                std::cout << "player invincibility off" << std::endl;
+                //std::cout << "player invincibility off" << std::endl;
             }
 
             if (event.type == sf::Event::Closed)
@@ -824,15 +824,15 @@ int main() {
 
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !button_toggle && menu_screen2 && selected_menu_item == 5) {
                 timer_start4 = true;
-                std::cout << "toggled button" << std::endl;
-                std::cout << "button on: " << button_toggle << std::endl;
+                //std::cout << "toggled button" << std::endl;
+                //std::cout << "button on: " << button_toggle << std::endl;
                 button_toggle = true;
                 multiplayer_mode = true;
             }
 
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 5 && timer_4 > 1) {
                 button_toggle = false;
-                std::cout << "toggled off" << std::endl;
+                //std::cout << "toggled off" << std::endl;
                 timer_start4 = false;
                 timer_4 = 1;
                 multiplayer_mode = false;
@@ -840,15 +840,15 @@ int main() {
 
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !audio_button_toggle && menu_screen2 && selected_menu_item == 6) {
                 timer_start10 = true;
-                std::cout << "toggled button" << std::endl;
-                std::cout << "button on: " << button_toggle << std::endl;
+                //std::cout << "toggled button" << std::endl;
+                //std::cout << "button on: " << button_toggle << std::endl;
                 audio_button_toggle = true;
                 sound_on = true;
             }
 
             if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 6 && timer_10 > 1) {
                 audio_button_toggle = false;
-                std::cout << "toggled off" << std::endl;
+                //std::cout << "toggled off" << std::endl;
                 timer_start10 = false;
                 timer_10 = 1;
                 sound_on = false;
@@ -950,6 +950,7 @@ int main() {
         auto fps_str = std::format("{:.2f}", fps);
         fps_text.setString(fps_counter_text + fps_str);
 
+        //std::cout << x << ", " << y << std::endl;
 
         // update menu button textures
 
@@ -1257,7 +1258,7 @@ int main() {
             // increase obstacle speed
 
             if (prev_b!=b && b%s_i==0 && b!=0) {
-                std::cout << "speed increased" << std::endl;
+                //std::cout << "speed increased" << std::endl;
 
                 // obstacle
 
@@ -1340,7 +1341,7 @@ int main() {
                     //initialized2 = false;
 
                     if ((box_box.intersects(player_box) || (box_box.intersects(player2_box) && multiplayer_mode) && obstacle3.getPosition()-prev_small_obstacle_pos != obstacle.getPosition()-prev_obstacle_pos)) {
-                        std::cout << "player collided" << std::endl;
+                        //std::cout << "player collided" << std::endl;
                         diagonal_rotating = false;
                         small_obstacle_movement = false;
                         found_diagonal = true;
@@ -1975,8 +1976,8 @@ int main() {
             window.draw(player2);
         if (new_obstacle2 == true)
             window.draw(obstacle2);
-        //if (intersected1 == true)
-            //window.draw(again_text);
+        if (intersected1 == true)
+            window.draw(again_text);
         //window.draw(bcounter_text);
 
         if (show_fps == true)
