@@ -142,6 +142,7 @@ sf::Texture audio_button_diff;
 sf::Texture audio_button1;
 sf::Texture audio_button2;
 sf::Texture menu_button_2players_texture_on_diff;
+sf::Texture game_title;
 
 void reset_variables() {
     intersected1 = false;
@@ -254,6 +255,8 @@ void load_textures() {
     if (!audio_button2.loadFromFile("../images/audio_button_on_on.png"))
         std::cout << "error loading menu image\n";
     if (!menu_button_2players_texture_on_diff.loadFromFile("../images/menu_button_2players_on_on.png"))
+        std::cout << "error loading menu image\n";
+    if (!game_title.loadFromFile("../images/game_title2.png"))
         std::cout << "error loading menu image\n";
 }
 
@@ -589,19 +592,21 @@ int main() {
     // else
     //     menu_button1.setTexture(menu_button1_texture_other);
 
-    menu_button1.setPosition(0, 120);
+    int inc = 40;
+
+    menu_button1.setPosition(0, 120+inc);
     menu_button1.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 2
 
     sf::Sprite menu_button2;
-    menu_button2.setPosition(0, 220);
+    menu_button2.setPosition(0, 220+inc);
     menu_button2.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 3
 
     sf::Sprite menu_button3;
-    menu_button3.setPosition(0, 320);
+    menu_button3.setPosition(0, 320+inc);
     menu_button3.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
     // button 4
@@ -626,6 +631,11 @@ int main() {
     audio_button.setPosition(0, 320);
     audio_button.setScale(sf::Vector2f(button_scale.x, button_scale.y));
 
+    //game title
+    sf::Sprite game_title_sprite;
+    game_title_sprite.setTexture(game_title);
+    game_title_sprite.setPosition(0, 5);
+    game_title_sprite.setScale(button_scale.x, button_scale.y);
 
     sf::Clock clock;
 
@@ -635,7 +645,6 @@ int main() {
 
         detected_counter--;
         detected_counter1--;
-
 
         //update flashwall color
         flashwall1.setFillColor(sf::Color(255, 0, 0, flashwall_alpha));
@@ -1984,6 +1993,7 @@ int main() {
             window.draw(fps_text);
         if (game_start == false) {
             window.draw(menu);
+            window.draw(game_title_sprite);
             window.draw(menu_button1);
             window.draw(menu_button2);
             window.draw(menu_button3);
