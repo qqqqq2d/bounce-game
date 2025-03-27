@@ -109,6 +109,7 @@ float music_timer = 0;
 bool music_played = false;
 int detected_counter = 0;
 int detected_counter1 = 0;
+int intersect_count = 0;
 
 // textures
 
@@ -1452,16 +1453,38 @@ int main() {
 
             // check collision with player and walls
 
-            if (((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1) && wall_move_done && !player_invincibility) {
+            if ((((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1)) && wall_move_done && !player_invincibility) {
                 if (multiplayer_mode) {
                     player1_dead = true;
                 }
                 else {
+
+                    //std::cout << "intersects" << std::endl;
+
                     intersected1 = true;
                 }
             }
 
-            if (((player2_box.intersects(wall1_box) || player2_box.intersects(wall2_box)) && b>b_a-1) || ((player2_box.intersects(wall3_box) || player2_box.intersects(wall4_box)) && b>b_a2-1) && wall_move_done && !player_invincibility) {
+
+            //test
+
+            /*if ((((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1)) && wall12_on) {
+                if (multiplayer_mode) {
+                    player1_dead = true;
+                }
+                else {
+                    intersect_count++;
+                    std::cout << "intersects" << intersect_count << std::endl;
+
+                    //intersected1 = true;
+                }
+            }
+
+            std::cout << "wall12_on: " << wall12_on << std::endl;
+            */
+
+
+            if ((((player2_box.intersects(wall1_box) || player2_box.intersects(wall2_box)) && b>b_a-1) || ((player2_box.intersects(wall3_box) || player2_box.intersects(wall4_box)) && b>b_a2-1)) && wall_move_done && !player_invincibility) {
                  if (multiplayer_mode) {
                      player2_dead = true;
                  }
@@ -1528,8 +1551,9 @@ int main() {
 
                 //std::cout  << "obstacle global bounds top: " << obstacle.getGlobalBounds().top << std::endl;
 
-                bounce_sound.setBuffer(buffer);
-                bounce_sound.play();
+                bouncesound();
+                //bounce_sound.setBuffer(buffer);
+                //bounce_sound.play();
             }
 
             // check collision with player and player2
@@ -1540,23 +1564,23 @@ int main() {
 
             // check collision with player and obstacle3
             sf::FloatRect obstacle3_box = obstacle3.getGlobalBounds();
-            if (player_box.intersects(obstacle3_box) && obstacle3_collision && !player_invincibility)
+            if (player_box.intersects(obstacle3_box) && obstacle3_collision && !player_invincibility) {
                 if (multiplayer_mode) {
                     player1_dead = true;
                 }
                 else {
                     intersected1 = true;
                 }
-
+            }
             // check collision with player2 and obstacle3
-            if (player2_box.intersects(obstacle3_box) && obstacle3_collision && multiplayer_mode)
+            if (player2_box.intersects(obstacle3_box) && obstacle3_collision && multiplayer_mode) {
                 if (multiplayer_mode) {
                     player2_dead = true;
                 }
                 else {
                     intersected1 = true;
                 }
-
+            }
             //move player out of game
             if (player1_dead) {
                 if (player1_alpha > 0) {
@@ -1592,8 +1616,6 @@ int main() {
                 endsound();
             }
 
-
-
             //if ()
 
             if (timer_start2)
@@ -1627,8 +1649,6 @@ int main() {
                 //std::cout << "increase speed" << std::endl;
             }
 
-
-
             // walls 1, 2 danger indicator
 
             if (b >= b_a-3 && !wall_move_done) {
@@ -1661,6 +1681,7 @@ int main() {
                     wall_timer_start = false;
                     wall_timer = 1;
                     wall_move_done = true;
+                    //std::cout << "walls 1, 2 ON" << std::endl;
                 }
             }
             // walls 3, 4 danger indicator
@@ -1694,6 +1715,8 @@ int main() {
                     wall_timer_start2 = false;
                     wall_timer2 = 1;
                     wall_move_done2 = true;
+                    
+                    //std::cout << "walls 3, 4 ON" << std::endl;
                 }
             }
 
@@ -1718,8 +1741,10 @@ int main() {
 
                     //flashwall1.move(0, -wall1_step * a_m);
                     //flashwall2.move(0, wall1_step * a_m);
+                    //std::cout << "walls ON" << std::endl;
                 }
 
+                //
                 if (b >= b_a+20 && wall_alpha > 0) {
                     wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
                     wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
@@ -1741,9 +1766,7 @@ int main() {
                     b_a = b_a + 40;
                     wall_move_done = false;
                 }
-
             }
-
             // walls 3, 4 appearance
 
             if (b >= b_a2) {
