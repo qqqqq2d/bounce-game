@@ -790,6 +790,19 @@ int main() {
                 //std::cout << "player invincibility off" << std::endl;
             }
 
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::M) {
+                timer_start4 = true;
+                sound_on = true;
+                audio_button_toggle = true;
+            }
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::M && timer_4 > 1) {
+                sound_on = false;
+                timer_start4 = false;
+                audio_button_toggle = false;
+                timer_4 = 1;
+            }
+
             if (event.type == sf::Event::Closed)
                 window.close();
 
@@ -821,7 +834,13 @@ int main() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down && selected_menu_item != highest_selected)// && !menu_screen2)
                 selected_menu_item++;
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up && selected_menu_item != lowest_selected)// && !menu_screen2)
-                selected_menu_item--;
+                selected_menu_item--; 
+
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S && selected_menu_item != highest_selected)// && !menu_screen2)
+                selected_menu_item++;
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::W && selected_menu_item != lowest_selected)// && !menu_screen2)
+                selected_menu_item--; 
+
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Escape) {
                 timer_5 = 1;
@@ -1453,7 +1472,7 @@ int main() {
 
             // check collision with player and walls
 
-            if ((((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1)) && wall_move_done && !player_invincibility) {
+            if ((((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1)) && (wall_move_done || wall_move_done2) && !player_invincibility) {
                 if (multiplayer_mode) {
                     player1_dead = true;
                 }
@@ -1465,6 +1484,9 @@ int main() {
                 }
             }
 
+
+            //std::cout << "wall_move_done: " << wall_move_done << std::endl;
+            //std::cout << "wall_move_done 2: " << wall_move_done2 << std::endl;
 
             //test
 
