@@ -1,0 +1,17 @@
+/home/mattias/Downloads/clion-2024.3.5/bin/cmake/linux/x64/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=make -G "Unix Makefiles" -S /home/mattias/prog/bounce-game -B /home/mattias/prog/bounce-game/cmake-build-debug
+-- The C compiler identification is GNU 14.2.1
+-- The CXX compiler identification is GNU 14.2.1
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: /usr/bin/cc - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: /usr/bin/c++ - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found SFML 2.6.1 in /usr/lib64/cmake/SFML
+-- Configuring done (0.5s)
+-- Generating done (0.0s)
+-- Build files have been written to: /home/mattias/prog/bounce-game/cmake-build-debug

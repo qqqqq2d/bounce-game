@@ -1,3 +1,5 @@
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/System/Vector2.hpp>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -110,6 +112,26 @@ bool music_played = false;
 int detected_counter = 0;
 int detected_counter1 = 0;
 int intersect_count = 0;
+bool flashbg_red_executed = false;
+
+/*float flashbg_alpha = 0;
+bool flashbg_done = true;
+bool flashbg_inc = false;
+float flash_inc_var = 2;
+float flash_dec_var = 0.025;
+float flashbg_alpha_level = 10;
+*/
+struct flash_bg {
+    float alpha;
+    bool done;
+    bool inc;
+    float inc_var;
+    float dec_var;
+    float level;
+};
+
+flash_bg flashbg1;
+flash_bg flashbg_red1;
 
 // textures
 
@@ -198,6 +220,21 @@ void reset_variables() {
     flash1_done = false;
     flash2_done = true;
     flash_walls = true;
+    flashbg_red_executed = false;
+    flashbg1.alpha = 0;
+    flashbg1.done = true;
+    flashbg1.inc = false;
+    flashbg1.inc_var = 2;
+    flashbg1.dec_var = 0.025;
+    flashbg1.level = 10;
+    flashbg_red1.alpha = 0;
+    flashbg_red1.done = true;
+    flashbg_red1.inc = false;
+    flashbg_red1.inc_var = 0.7;
+    flashbg_red1.dec_var = 0.1;
+    flashbg_red1.level = 30;
+
+
 }
 
 void load_textures() {
@@ -275,7 +312,7 @@ void load_textures() {
 //7.5
 //10
 //20
-int get_wall_step(const float wall_y) {
+float get_wall_step(const float wall_y) {
     if(wall_y <= 460 && wall_y >= 450) {
         return  2;
     }
@@ -286,10 +323,10 @@ int get_wall_step(const float wall_y) {
         return  4;
     }
     if(wall_y <= 439 && wall_y >= 431) {
-        return  3;
+        return  2.5;
     }
     if(wall_y <= 430 && wall_y >= 411) {
-        return  2;
+        return  2.2;
     }
     return 1;
 }
@@ -298,7 +335,7 @@ int get_wall_step(const float wall_y) {
 
 //20
 
-int get_wall_step2(const float wall_x) {
+float get_wall_step2(const float wall_x) {
     if(wall_x <= -10 && wall_x >= -1) {
         return  2;
     }
@@ -309,13 +346,14 @@ int get_wall_step2(const float wall_x) {
         return  4;
     }
     if(wall_x <= 8 && wall_x >= 10) {
-        return  3;
+        return  2.5;
     }
     if(wall_x <= 11 && wall_x >= 14) {
-        return  2;
+        return  2.2;
     }
-    return 1;
+    return 0;
 }
+
 
 sf::Vector2f prev_obstacle_pos;
 sf::Vector2f prev_small_obstacle_pos;
@@ -380,7 +418,6 @@ int main() {
     load_textures();
 
     // sounds
-
 
     if (sound_on) {
         if (!buffer.loadFromFile("../sounds/bouncesound.wav"))
@@ -536,7 +573,31 @@ int main() {
     sf::RectangleShape flashwall4(sf::Vector2f(20.0f, 480.0f));
     flashwall4.setOrigin(0, 0);
     flashwall4.setPosition(640, 0);
+    
+    //flash backgrounds
+    
+    flashbg1.alpha = 0;
+    flashbg1.done = true;
+    flashbg1.inc = false;
+    flashbg1.inc_var = 2;
+    flashbg1.dec_var = 0.025;
+    flashbg1.level = 10;
 
+    sf::RectangleShape flashbg(sf::Vector2f(640, 480));
+    flashbg.setOrigin(0, 0);  
+    flashbg.setFillColor(sf::Color(255, 255, 255, flashbg1.alpha));
+    
+    flashbg_red1.alpha = 0;
+    flashbg_red1.done = true;
+    flashbg_red1.inc = false;
+    flashbg_red1.inc_var = 0.7;
+    flashbg_red1.dec_var = 0.1;
+    flashbg_red1.level = 30;
+
+    sf::RectangleShape flashbg_red(sf::Vector2f(640, 480));
+    flashbg.setOrigin(0, 0);  
+    flashbg.setFillColor(sf::Color(255, 0, 0, flashbg_red1.alpha));
+        
     // again text
 
     sf::Text again_text;
@@ -667,6 +728,7 @@ int main() {
 
         //debug2
 
+        std::cout << "." << std::endl;
         window.setKeyRepeatEnabled(false);
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
         //std::cout << "button toggle: " << button_toggle << std::endl;
@@ -691,7 +753,6 @@ int main() {
 
         if (timer_start10 && timer_10 < 2)
             timer_10 = timer_10 + a_m;
-
 
         if (timer_start5 && timer_5 < 2)
             //timer_4++;
@@ -1179,26 +1240,32 @@ int main() {
                         obstacle3_y = -obstacle3_y;
                         b++;
                         bouncesound();
-                        //timer_start = true;
+                            flashbg1.done = false;
+                            flashbg1.inc = false;
                     }
                     if (obstacle.getPosition().x > 620) {
                         obstacle_x = -obstacle_x;
                         obstacle3_x = -obstacle3_x;
                         b++;
                         bouncesound();
+                            flashbg1.done = false;
+                            flashbg1.inc = false;
                     }
                     if (obstacle.getPosition().y < 0 + obstacle.getOrigin().y) {
                         obstacle_y = -obstacle_y;
                         obstacle3_y = -obstacle3_y;
                         b++;
                         bouncesound();
-                        //timer_start = true;
+                            flashbg1.done = false;
+                            flashbg1.inc = false;
                     }
                     if (obstacle.getPosition().x < 0 + obstacle.getOrigin().x) {
                         obstacle_x = -obstacle_x;
                         obstacle3_x = -obstacle3_x;
                         b++;
                         bouncesound();
+                            flashbg1.done = false;
+                            flashbg1.inc = false;
                     }
                 }
                 // small obstacle bouncing
@@ -1334,7 +1401,7 @@ int main() {
                     //obstacle_x++;
                     //obstacle_y--;
                 }
-
+            
                 else if (obstacle2_x < 0 && obstacle2_y > 0) {
                     obstacle2_x = obstacle2_x-0.25;
                     obstacle2_y = obstacle2_y+0.25;
@@ -1375,6 +1442,8 @@ int main() {
                         small_obstacle_movement = false;
                         found_diagonal = true;
                         search_diagonal = false;
+                        
+                        flashbg_red_executed = false;
                         //if (obstacle3.getPosition().x > 0 || obstacle3.getPosition().y > 0 || obstacle3.getPosition().x < 640 || obstacle3.getPosition().y < 480) {
                         //     obstacle3.move(n*a_m, m*a_m);
                         //     diagonal_rotating = false;
@@ -1389,8 +1458,11 @@ int main() {
                     obstacle3.move(n*a_m*obstacle3_speed, m*a_m*obstacle3_speed);
                     //std::cout << "shoot" << std::endl;
                     timer_start7 = true;
-
-
+                    if (!flashbg_red_executed) {
+                        flashbg_red1.done = false;
+                        std::cout << "FALSE" << std::endl;
+                        flashbg_red_executed = true;
+                    }
                     //static bool initialized;
                     if (!initialized) {
                         initialized = true;
@@ -1425,7 +1497,6 @@ int main() {
                 else {
                 intersected1 = true;
                 }
-
                 //window.close();
             }
 
@@ -1881,7 +1952,7 @@ int main() {
                 timer_start2 = true;
 
                 //s_i = 40;
-
+                
                 if (timer_2 >= 60) {
                     new_obstacle2 = true;
                     o2_start_moving = false;
@@ -2002,13 +2073,65 @@ int main() {
             prev_small_obstacle_pos = obstacle3.getPosition();
         }
 
+        if (!flashbg1.done){
+            
+            if (!flashbg1.inc){
+                flashbg1.alpha+=flashbg1.inc_var;
+                flashbg.setFillColor(sf::Color(255,255,255,flashbg1.alpha));
+            }
+            if (flashbg1.alpha >= flashbg1.level){
+                flashbg1.inc = true;
+            }
+            if (flashbg1.inc) {
+                flashbg1.alpha-=flashbg1.dec_var;
+                flashbg.setFillColor(sf::Color(255,255,255,flashbg1.alpha));
+            }
+            if (flashbg1.alpha <= 0) {
+                flashbg1.done = true;
+                flashbg1.inc = false;
+            }
+        }
+
+        if (!flashbg_red1.done){
+            
+            //std::cout << "loop" << std::endl;
+
+            if (!flashbg_red1.inc){
+                flashbg_red1.alpha+=flashbg_red1.inc_var;
+                flashbg.setFillColor(sf::Color(255,0,0,flashbg_red1.alpha));
+            }
+            if (flashbg_red1.alpha >= flashbg_red1.level){
+flashbg_red1.inc = true;
+            }
+            if (flashbg_red1.inc) {
+                flashbg_red1.alpha-=flashbg_red1.dec_var;
+                flashbg.setFillColor(sf::Color(255,0,0,flashbg_red1.alpha));
+            }
+            if (flashbg_red1.alpha <= 0) {
+                flashbg_red1.done = true;
+                flashbg_red1.inc = false;
+            }
+        }
+
+        if (intersected1) {
+            
+            //if (!flashbg_red_executed) {
+                flashbg_red_executed = true;
+                flashbg_red1.level = 255;
+                flashbg_red1.inc_var = 0.3;
+                flashbg_red1.done = false;
+
+            //}
+        }
+
         window.clear(sf::Color::Black);
         window.draw(game_background);
 
         for (auto & box: white_boxes) {
             //window.draw(box);
         }
-
+        
+        window.draw(flashbg);
         window.draw(obstacle3);
         window.draw(player);
         window.draw(obstacle);
@@ -2051,7 +2174,6 @@ int main() {
         }
 
         window.display();
-
         }
     return 0;
 
