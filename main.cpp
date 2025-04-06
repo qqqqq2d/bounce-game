@@ -225,14 +225,14 @@ void reset_variables() {
     flashbg1.alpha = 0;
     flashbg1.done = true;
     flashbg1.inc = false;
-    flashbg1.inc_var = 2;
-    flashbg1.dec_var = 0.025;
+    flashbg1.inc_var = 12;
+    flashbg1.dec_var = 0.15;
     flashbg1.level = 10;
     flashbg_red1.alpha = 0;
     flashbg_red1.done = true;
     flashbg_red1.inc = false;
-    flashbg_red1.inc_var = 0.7;
-    flashbg_red1.dec_var = 0.05;
+    flashbg_red1.inc_var = 4;
+    flashbg_red1.dec_var = 0.3;
     flashbg_red1.level = 30;
 
 
@@ -313,21 +313,46 @@ void load_textures() {
 //7.5
 //10
 //20
+//
+
+float wall_speed[9] = {1,
+                       1,
+                       1.5,
+                       3,
+                       5,
+                       3,
+                       2,
+                       1,
+                       0.75
+                       };
+
 float get_wall_step(const float wall_y) {
-    if(wall_y <= 460 && wall_y >= 450) {
-        return  2;
+    if(wall_y <= 480 && wall_y >= 471) {
+        return wall_speed[0];
     }
-    if(wall_y <= 449 && wall_y >= 444) {
-        return  3;
+    if(wall_y <= 470 && wall_y >= 461) {
+        return  wall_speed[1];
     }
-    if(wall_y <= 443 && wall_y >= 440) {
-        return  4;
+    if(wall_y <= 460 && wall_y >= 451) {
+        return  wall_speed[2];
     }
-    if(wall_y <= 439 && wall_y >= 431) {
-        return  2.5;
+    if(wall_y <= 450 && wall_y >= 441) {
+        return  wall_speed[3];
     }
-    if(wall_y <= 430 && wall_y >= 411) {
-        return  2.2;
+    if(wall_y <= 440 && wall_y >= 431) {
+        return  wall_speed[4];
+    }
+    if(wall_y <= 430 && wall_y >= 421) {
+        return  wall_speed[5];
+    }
+    if(wall_y <= 420 && wall_y >= 411) {
+        return  wall_speed[6];
+    }
+    if(wall_y <= 410 && wall_y >= 406) {
+        return  wall_speed[7];
+    }
+    if(wall_y <= 405 && wall_y >= 400) {
+        return  wall_speed[8];
     }
     return 1;
 }
@@ -338,19 +363,19 @@ float get_wall_step(const float wall_y) {
 
 float get_wall_step2(const float wall_x) {
     if(wall_x <= -10 && wall_x >= -1) {
-        return  2;
+        return  wall_speed[0];
     }
     if(wall_x <= 0 && wall_x >= 5) {
-        return  3;
+        return  wall_speed[1];
     }
     if(wall_x <= 6 && wall_x >= 7) {
-        return  4;
+        return  wall_speed[2];
     }
     if(wall_x <= 8 && wall_x >= 10) {
-        return  2.5;
+        return  wall_speed[3];
     }
     if(wall_x <= 11 && wall_x >= 14) {
-        return  2.2;
+        return  wall_speed[4];
     }
     return 0;
 }
@@ -580,8 +605,8 @@ int main() {
     flashbg1.alpha = 0;
     flashbg1.done = true;
     flashbg1.inc = false;
-    flashbg1.inc_var = 2;
-    flashbg1.dec_var = 0.025;
+    flashbg1.inc_var = 12;
+    flashbg1.dec_var = 0.15;
     flashbg1.level = 10;
 
     sf::RectangleShape flashbg(sf::Vector2f(640, 480));
@@ -591,8 +616,8 @@ int main() {
     flashbg_red1.alpha = 0;
     flashbg_red1.done = true;
     flashbg_red1.inc = false;
-    flashbg_red1.inc_var = 0.7;
-    flashbg_red1.dec_var = 0.05;
+    flashbg_red1.inc_var = 4;
+    flashbg_red1.dec_var = 0.3;
     flashbg_red1.level = 30;
 
     sf::RectangleShape flashbg_red(sf::Vector2f(640, 480));
@@ -728,9 +753,9 @@ int main() {
         float a_m = current_time * mp;
 
         //debug2
-        std::cout << "wall1, 2 alpha: " << wall_alpha << std::endl;
-        std::cout << "wall3, 4 alpha: " << wall_alpha2 << std::endl;
-
+        //
+        std::cout << flashbg1.alpha << std::endl;
+        //std::cout << a_m << std::endl;
         std::cout << "." << std::endl;
         window.setKeyRepeatEnabled(false);
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
@@ -1853,8 +1878,8 @@ int main() {
 
                 //
                 if (b >= b_a+20 && wall_alpha > 0) {
-                    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.05));
-                    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.05));
+                    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.3*a_m));
+                    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.3*a_m));
                     //wall_alpha_test = 0;
                     //std::cout << "fading walls" << std::endl;
                     
@@ -1900,8 +1925,8 @@ int main() {
                 }
 
                 if (b >= b_a2+20 && wall_alpha2 > 0) {
-                    wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.05));
-                    wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.05));
+                    wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.3*a_m));
+                    wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.3*a_m));
                     //wall_alpha2 = wall_alpha2 - 0.5;
 
 
@@ -2089,14 +2114,14 @@ int main() {
         if (!flashbg1.done){
             
             if (!flashbg1.inc){
-                flashbg1.alpha+=flashbg1.inc_var;
+                flashbg1.alpha+=flashbg1.inc_var*a_m;
                 flashbg.setFillColor(sf::Color(255,255,255,flashbg1.alpha));
             }
             if (flashbg1.alpha >= flashbg1.level){
                 flashbg1.inc = true;
             }
             if (flashbg1.inc) {
-                flashbg1.alpha-=flashbg1.dec_var;
+                flashbg1.alpha-=flashbg1.dec_var*a_m;
                 flashbg.setFillColor(sf::Color(255,255,255,flashbg1.alpha));
             }
             if (flashbg1.alpha <= 0) {
@@ -2110,14 +2135,14 @@ int main() {
             //std::cout << "loop" << std::endl;
 
             if (!flashbg_red1.inc){
-                flashbg_red1.alpha+=flashbg_red1.inc_var;
+                flashbg_red1.alpha+=flashbg_red1.inc_var*a_m;
                 flashbg.setFillColor(sf::Color(255,0,0,flashbg_red1.alpha));
             }
             if (flashbg_red1.alpha >= flashbg_red1.level){
 flashbg_red1.inc = true;
             }
             if (flashbg_red1.inc) {
-                flashbg_red1.alpha-=flashbg_red1.dec_var;
+                flashbg_red1.alpha-=flashbg_red1.dec_var*a_m;
                 flashbg.setFillColor(sf::Color(255,0,0,flashbg_red1.alpha));
             }
             if (flashbg_red1.alpha <= 0) {
@@ -2131,7 +2156,7 @@ flashbg_red1.inc = true;
             //if (!flashbg_red_executed) {
                 flashbg_red_executed = true;
                 flashbg_red1.level = 255;
-                flashbg_red1.inc_var = 0.3;
+                flashbg_red1.inc_var = 1.8;
                 flashbg_red1.done = false;
 
             //}
