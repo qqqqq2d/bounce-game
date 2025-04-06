@@ -113,6 +113,7 @@ int detected_counter = 0;
 int detected_counter1 = 0;
 int intersect_count = 0;
 bool flashbg_red_executed = false;
+bool flashbg_red_executed2 = false;
 
 /*float flashbg_alpha = 0;
 bool flashbg_done = true;
@@ -231,7 +232,7 @@ void reset_variables() {
     flashbg_red1.done = true;
     flashbg_red1.inc = false;
     flashbg_red1.inc_var = 0.7;
-    flashbg_red1.dec_var = 0.1;
+    flashbg_red1.dec_var = 0.05;
     flashbg_red1.level = 30;
 
 
@@ -591,7 +592,7 @@ int main() {
     flashbg_red1.done = true;
     flashbg_red1.inc = false;
     flashbg_red1.inc_var = 0.7;
-    flashbg_red1.dec_var = 0.1;
+    flashbg_red1.dec_var = 0.05;
     flashbg_red1.level = 30;
 
     sf::RectangleShape flashbg_red(sf::Vector2f(640, 480));
@@ -727,6 +728,8 @@ int main() {
         float a_m = current_time * mp;
 
         //debug2
+        std::cout << "wall1, 2 alpha: " << wall_alpha << std::endl;
+        std::cout << "wall3, 4 alpha: " << wall_alpha2 << std::endl;
 
         std::cout << "." << std::endl;
         window.setKeyRepeatEnabled(false);
@@ -1443,7 +1446,8 @@ int main() {
                         found_diagonal = true;
                         search_diagonal = false;
                         
-                        flashbg_red_executed = false;
+                        //flashbg_red_executed = false;
+                        
                         //if (obstacle3.getPosition().x > 0 || obstacle3.getPosition().y > 0 || obstacle3.getPosition().x < 640 || obstacle3.getPosition().y < 480) {
                         //     obstacle3.move(n*a_m, m*a_m);
                         //     diagonal_rotating = false;
@@ -1458,11 +1462,13 @@ int main() {
                     obstacle3.move(n*a_m*obstacle3_speed, m*a_m*obstacle3_speed);
                     //std::cout << "shoot" << std::endl;
                     timer_start7 = true;
-                    if (!flashbg_red_executed) {
+
+                    /*if (!flashbg_red_executed) {
                         flashbg_red1.done = false;
                         std::cout << "FALSE" << std::endl;
                         flashbg_red_executed = true;
-                    }
+                    }*/
+
                     //static bool initialized;
                     if (!initialized) {
                         initialized = true;
@@ -1776,6 +1782,7 @@ int main() {
                     wall_move_done = true;
                     //std::cout << "walls 1, 2 ON" << std::endl;
                 }
+                flashbg_red_executed = false;
             }
             // walls 3, 4 danger indicator
 
@@ -1809,13 +1816,20 @@ int main() {
                     wall_timer2 = 1;
                     wall_move_done2 = true;
                     
+                    std::cout << "set to  false" << std::endl;
                     //std::cout << "walls 3, 4 ON" << std::endl;
                 }
+                flashbg_red_executed2 = false;
             }
 
             // walls 1, 2 appearance
 
             if (b >= b_a) {
+
+                if (!flashbg_red_executed) {
+                    flashbg_red_executed = true;
+                    flashbg_red1.done = false;
+                }
 
                 //std::cout << "walls 1, 2 appearance" << std::endl;
 
@@ -1839,22 +1853,21 @@ int main() {
 
                 //
                 if (b >= b_a+20 && wall_alpha > 0) {
-                    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
-                    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.5));
+                    wall1.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.05));
+                    wall2.setFillColor(sf::Color(255, 0, 0, wall_alpha = wall_alpha - 0.05));
                     //wall_alpha_test = 0;
                     //std::cout << "fading walls" << std::endl;
-
+                    
+                    flashwall1.setPosition(0, 480);
+                    flashwall2.setPosition(0, -20);
                 }
-                if (b >= b_a+20 && wall_alpha == 0) { // b_a < b_a+20 && wall_alpha == 0 && !add_b_a
+                if (b >= b_a+20 && wall_alpha <= 0) { // b_a < b_a+20 && wall_alpha == 0 && !add_b_a
                     //std::cout << "set walls positions " << std::endl;
                     wall1.setPosition(0, 480);
                     wall2.setPosition(0, -20);
 
-                    flashwall1.setPosition(wall1.getPosition());
-                    flashwall2.setPosition(wall2.getPosition());
-
-                    //flashwall1.setPosition(0, 480);
-                    //flashwall2.setPosition(0, -20);
+                    //flashwall1.setPosition(wall1.getPosition());
+                    //flashwall2.setPosition(wall2.getPosition());
 
                     b_a = b_a + 40;
                     wall_move_done = false;
@@ -1863,6 +1876,11 @@ int main() {
             // walls 3, 4 appearance
 
             if (b >= b_a2) {
+
+                if (!flashbg_red_executed2) {
+                    flashbg_red_executed2 = true;
+                    flashbg_red1.done = false;
+                }
 
                 //std::cout << "walls 3, 4 appearance" << std::endl;
 
@@ -1882,19 +1900,20 @@ int main() {
                 }
 
                 if (b >= b_a2+20 && wall_alpha2 > 0) {
-                    wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.5));
-                    wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.5));
+                    wall3.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.05));
+                    wall4.setFillColor(sf::Color(255, 0, 0, wall_alpha2 = wall_alpha2 - 0.05));
                     //wall_alpha2 = wall_alpha2 - 0.5;
+
+
+                    flashwall3.setPosition(-20, 0);
+                    flashwall4.setPosition(640, 0);
                 }
-                if (b >= b_a2+20 && wall_alpha2 == 0) {
+                if (b >= b_a2+20 && wall_alpha2 <= 0) {
                     wall3.setPosition(-20, 0);
                     wall4.setPosition(640, 0);
 
-                    flashwall3.setPosition(wall3.getPosition());
-                    flashwall4.setPosition(wall4.getPosition());
-
-                    //flashwall3.setPosition(-20, 0);
-                    //flashwall4.setPosition(640, 0);
+                    //flashwall3.setPosition(wall3.getPosition());
+                    //flashwall4.setPosition(wall4.getPosition());
 
                     b_a2 = b_a2 + 40;
                     wall_move_done2 = false;
@@ -1924,12 +1943,6 @@ int main() {
                     flash2_done =  true;
                 }
             }
-
-            /*if (player.getPosition().x < player_x) {
-                std::cout << "decreasing" << std::endl;
-            }
-            */
-            //change background alpha depending on player position
 
             // duplicate obstacle
 
