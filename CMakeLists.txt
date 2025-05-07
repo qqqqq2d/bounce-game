@@ -12,9 +12,10 @@ add_executable(prog main.cpp)
 
 # Find the SFML package and link the required libraries
 find_package(SFML 2.6.1 COMPONENTS graphics window system audio REQUIRED)
+find_package(fmt REQUIRED)
 
 # Link SFML libraries to the executable
-target_link_libraries(prog sfml-graphics sfml-window sfml-system sfml-audio)
+target_link_libraries(prog sfml-graphics sfml-window sfml-system sfml-audio fmt::fmt)
 
 # Add compile options for strict ISO C++ and warnings
 if (NOT MSVC)

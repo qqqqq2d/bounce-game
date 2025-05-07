@@ -133,8 +133,8 @@ struct flash_bg {
 
 flash_bg flashbg1;
 flash_bg flashbg_red1;
-
 // textures
+
 
 sf::Texture player_texture;
 sf::Texture player2_texture;
@@ -299,12 +299,15 @@ void load_textures() {
         std::cout << "error loading menu image\n";
 }
 
+
+
 //wall_y = 480..400
 //470..460 2
 //459..410 3
 //410..371 4
 //370..331 3
 //320..310 2
+
 
 //20
 //10
@@ -419,6 +422,7 @@ void bouncesound(){
     
 }
 
+
 void endsound(){
     if (sound_on){
         end_sound_played = true;
@@ -504,6 +508,8 @@ int main() {
 
     // create window
     //sf::RenderWindow window(sf::VideoMode(640, 480),"My window", sf::Style::Close);
+
+
     sf::RenderWindow window(sf::VideoMode(window_x, window_y),"Bounce game", sf::Style::Titlebar | sf::Style::Close);
     window.setPosition(sf::Vector2i(50, 50));
 
@@ -512,7 +518,7 @@ int main() {
     player.setTexture(player_texture);
     player.setOrigin(10, 10);
     player.setPosition(320, 240);
-    player.setColor(sf::Color(255,255,255,player1_alpha));
+    player.setColor(sf::Color(255,255,255));
 
     // player2 rectangle
 
@@ -548,10 +554,10 @@ int main() {
     // white rectangle
     auto white_boxes = create_white_boxes(50);
 
-    auto box_renderer = [&]() {
+    /*auto box_renderer = [&]() {
         window.draw(createbox());
         std::cout << "box rendered" << std::endl;
-    };
+        };*/
 
     // game walls
 
@@ -727,7 +733,7 @@ int main() {
 
     sf::Clock clock;
 
-    sf::View view = window.getDefaultView();
+    //sf::View view = window.getDefaultView();
 
     while (window.isOpen()) {
 
@@ -754,9 +760,15 @@ int main() {
 
         //debug2
         //
-        std::cout << flashbg1.alpha << std::endl;
+
+        //std::cout << "Wall 1, 2: " << wall_move_done << std::endl;
+        //std::cout << "Wall 3, 4: " << wall_move_done << std::endl;
+
+        //std::cout << wall_move_done2 << std::endl;
+        
+        //std::cout << flashbg1.alpha << std::endl;
         //std::cout << a_m << std::endl;
-        std::cout << "." << std::endl;
+        //std::cout << "." << std::endl;
         window.setKeyRepeatEnabled(false);
         //std::cout << "selected menu item: " << selected_menu_item << std::endl;
         //std::cout << "button toggle: " << button_toggle << std::endl;
@@ -864,7 +876,7 @@ int main() {
                 timer_4 = 1;
             }
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::I) {
+            /*if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::I) {
                 timer_start4 = true;
                 player_invincibility = true;
                 player.setColor(sf::Color(255, 255, 255, 64));
@@ -877,7 +889,8 @@ int main() {
                 timer_4 = 1;
                 player.setColor(sf::Color(255, 255, 255, 255));
                 //std::cout << "player invincibility off" << std::endl;
-            }
+                }
+            */
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::M) {
                 timer_start4 = true;
@@ -898,7 +911,7 @@ int main() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q)//(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 window.close();
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && !menu_screen2 && selected_menu_item == 1)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && !menu_screen2 && selected_menu_item == 1 && !intersected1)
                 game_start = true;
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && selected_menu_item == 2) {
@@ -920,14 +933,14 @@ int main() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && selected_menu_item == 3)
                 window.close();
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down && selected_menu_item != highest_selected)// && !menu_screen2)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down && selected_menu_item != highest_selected && !game_start)// && !menu_screen2)
                 selected_menu_item++;
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up && selected_menu_item != lowest_selected)// && !menu_screen2)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up && selected_menu_item != lowest_selected && !game_start)// && !menu_screen2)
                 selected_menu_item--; 
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S && selected_menu_item != highest_selected)// && !menu_screen2)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::S && selected_menu_item != highest_selected && !game_start)// && !menu_screen2)
                 selected_menu_item++;
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::W && selected_menu_item != lowest_selected)// && !menu_screen2)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::W && selected_menu_item != lowest_selected && !game_start)// && !menu_screen2)
                 selected_menu_item--; 
 
 
@@ -940,7 +953,7 @@ int main() {
                 selected_menu_item = 1;
             }
 
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !button_toggle && menu_screen2 && selected_menu_item == 5) {
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !button_toggle && menu_screen2 && selected_menu_item == 5 && !intersected1) {
                 timer_start4 = true;
                 //std::cout << "toggled button" << std::endl;
                 //std::cout << "button on: " << button_toggle << std::endl;
@@ -948,7 +961,7 @@ int main() {
                 multiplayer_mode = true;
             }
 
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 5 && timer_4 > 1) {
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 5 && timer_4 > 1 && !intersected1) {
                 button_toggle = false;
                 //std::cout << "toggled off" << std::endl;
                 timer_start4 = false;
@@ -956,7 +969,7 @@ int main() {
                 multiplayer_mode = false;
             }
 
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !audio_button_toggle && menu_screen2 && selected_menu_item == 6) {
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && !audio_button_toggle && menu_screen2 && selected_menu_item == 6 && !intersected1) {
                 timer_start10 = true;
                 //std::cout << "toggled button" << std::endl;
                 //std::cout << "button on: " << button_toggle << std::endl;
@@ -964,7 +977,7 @@ int main() {
                 sound_on = true;
             }
 
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 6 && timer_10 > 1) {
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && selected_menu_item == 6 && timer_10 > 1 && !intersected1) {
                 audio_button_toggle = false;
                 //std::cout << "toggled off" << std::endl;
                 timer_start10 = false;
@@ -976,7 +989,7 @@ int main() {
 
             //resize window
 
-            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && menu_screen2 && selected_menu_item == 4 && (timer_5 > 1)) {
+            if ((event.type == sf::Event::KeyPressed) && (event.key.code == sf::Keyboard::Return) && menu_screen2 && selected_menu_item == 4 && (timer_5 > 1) && !intersected1) {
                 window.setSize(sf::Vector2u(window_x = window_x+window_x*0.25, window_y = window_y+window_y*0.25));
                 window_res++;
                 timer_start5 = false;
@@ -997,7 +1010,7 @@ int main() {
 
             // restart game
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Backspace && intersected1 == true) {
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && intersected1 == true) {
                 reset_variables();
                 obstacle.setPosition(x2, y2);
                 obstacle3.setPosition(x2-30, y2-30);
@@ -1145,6 +1158,8 @@ int main() {
                 obstacle.setPosition(x2, y2);
                 obstacle3.setPosition(x2-30, y2-30);
                 player.setPosition(x, y);
+                wall1.setPosition(0, 480);
+                wall1.setPosition(0, 480);
                 wall1.setPosition(0, 480);
                 wall2.setPosition(0, -20);
                 wall3.setPosition(-20, 0);
@@ -1347,6 +1362,8 @@ int main() {
 
             // debug
 
+            //std::cout << game_start << std::endl;
+
             //std::cout << "bounce count: " << b << std::endl;
             //std::cout << "obstacle speed: " << obstacle_x << ", " << obstacle_y << std::endl;
             //std::cout << "obstacle2 speed: " << obstacle2_x << ", " << obstacle2_y << std::endl;
@@ -1464,7 +1481,7 @@ int main() {
                     //initialized = false;
                     //initialized2 = false;
 
-                    if ((box_box.intersects(player_box) || (box_box.intersects(player2_box) && multiplayer_mode) && obstacle3.getPosition()-prev_small_obstacle_pos != obstacle.getPosition()-prev_obstacle_pos)) {
+                    if ((box_box.intersects(player_box) || (box_box.intersects(player2_box) && multiplayer_mode) && (obstacle3.getPosition()-prev_small_obstacle_pos != obstacle.getPosition()-prev_obstacle_pos))) {
                         //std::cout << "player collided" << std::endl;
                         diagonal_rotating = false;
                         small_obstacle_movement = false;
@@ -1573,20 +1590,45 @@ int main() {
             sf::FloatRect wall4_box = wall4.getGlobalBounds();
 
             // check collision with player and walls
-
-            if ((((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1)) && (wall_move_done || wall_move_done2) && !player_invincibility) {
-                if (multiplayer_mode) {
+            
+            /*if ((((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) || ((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1)) && wall_move_done && !player_invincibility) {
+                if (multiplayer_mode) {             //wall_move_done
                     player1_dead = true;
                 }
                 else {
 
                     //std::cout << "intersects" << std::endl;
-
                     intersected1 = true;
                 }
+                }*/
+
+            auto wall_intersect = [&]() {
+                if (multiplayer_mode) {             //wall_move_done
+                    player1_dead = true;
+                }
+                else {
+
+                    //std::cout << "intersects" << std::endl;
+                    intersected1 = true;
+                }
+            };
+
+            if (((player_box.intersects(wall1_box) || player_box.intersects(wall2_box)) && b>b_a-1) && wall_move_done && !player_invincibility) {
+                wall_intersect();
             }
 
+            if (((player_box.intersects(wall3_box) || player_box.intersects(wall4_box)) && b>b_a2-1) && wall_move_done2 && !player_invincibility) {
+                wall_intersect();
+            }
 
+            if (((player2_box.intersects(wall1_box) || player2_box.intersects(wall2_box)) && b>b_a-1) && wall_move_done && !player_invincibility) {
+                player2_dead = true;
+            }
+
+            if (((player2_box.intersects(wall3_box) || player2_box.intersects(wall4_box)) && b>b_a2-1) && wall_move_done2 && !player_invincibility) {
+                player2_dead = true;
+            }
+            
             //std::cout << "wall_move_done: " << wall_move_done << std::endl;
             //std::cout << "wall_move_done 2: " << wall_move_done2 << std::endl;
 
@@ -1608,7 +1650,7 @@ int main() {
             */
 
 
-            if ((((player2_box.intersects(wall1_box) || player2_box.intersects(wall2_box)) && b>b_a-1) || ((player2_box.intersects(wall3_box) || player2_box.intersects(wall4_box)) && b>b_a2-1)) && wall_move_done && !player_invincibility) {
+            if ((((player2_box.intersects(wall1_box) || player2_box.intersects(wall2_box)) && b>b_a-1) || ((player2_box.intersects(wall3_box) || player2_box.intersects(wall4_box)) && b>b_a2-1)) && wall_move_done2 && !player_invincibility) {
                  if (multiplayer_mode) {
                      player2_dead = true;
                  }
@@ -2162,12 +2204,12 @@ flashbg_red1.inc = true;
             //}
         }
 
-        window.clear(sf::Color::Black);
+        window.clear();
         window.draw(game_background);
 
-        for (auto & box: white_boxes) {
+        /*for (auto & box: white_boxes) {
             //window.draw(box);
-        }
+            }*/
         
         window.draw(flashbg);
         window.draw(obstacle3);
@@ -2175,9 +2217,9 @@ flashbg_red1.inc = true;
         window.draw(obstacle);
         window.draw(wall1);
         window.draw(wall2);
-        window.draw(bcounter_text);
         window.draw(wall3);
         window.draw(wall4);
+        window.draw(bcounter_text);
         window.draw(flashwall1);
         window.draw(flashwall2);
         window.draw(flashwall3);
