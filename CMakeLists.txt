@@ -10,6 +10,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 # Add the executable
 add_executable(prog main.cpp)
 
+if(WIN32)
+    set_target_properties(prog PROPERTIES
+        WIN32_EXECUTABLE TRUE
+        LINK_FLAGS "/ENTRY:mainCRTStartup"
+    )
+endif()
+
 # Find the SFML package and link the required libraries
 find_package(SFML 2.6.1 COMPONENTS graphics window system audio REQUIRED)
 find_package(fmt REQUIRED)
