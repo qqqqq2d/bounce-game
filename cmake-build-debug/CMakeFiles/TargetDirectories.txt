@@ -1,3 +1,0 @@
-/home/mattias/prog/bounce-game/cmake-build-debug/CMakeFiles/prog.dir
-/home/mattias/prog/bounce-game/cmake-build-debug/CMakeFiles/edit_cache.dir
-/home/mattias/prog/bounce-game/cmake-build-debug/CMakeFiles/rebuild_cache.dir

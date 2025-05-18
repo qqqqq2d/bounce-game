@@ -450,11 +450,11 @@ int main() {
     // sounds
 
     if (sound_on) {
-        if (!buffer.loadFromFile("../sounds/bouncesound.wav"))
+        if (!buffer.loadFromFile("../sounds/bg_sound1.wav"))
             return -1;
     }
-    if (false) {
-        if (!buffer2.loadFromFile("../sounds/blipSelect.wav"))
+    if (sound_on) {
+        if (!buffer2.loadFromFile("../sounds/bg_bounce.wav"))
         return -1;
     }
     sf::Sound end_sound;
@@ -471,7 +471,7 @@ int main() {
         return -1;
 
     sf::Music musictrack2;
-    if (!musictrack2.openFromFile("../sounds/bouncegametrack2.wav"))
+    if (!musictrack2.openFromFile("../sounds/bouncegametrack1ver2.wav"))
         return -1;
 
     bounce_sound.setPitch(1.2f);
@@ -911,7 +911,7 @@ int main() {
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Q)//(sf::Keyboard::isKeyPressed(sf::Keyboard::Q))
                 window.close();
 
-            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && !menu_screen2 && selected_menu_item == 1 && !intersected1)
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && !menu_screen2 && selected_menu_item == 1)
                 game_start = true;
 
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Return && selected_menu_item == 2) {
@@ -1883,7 +1883,7 @@ int main() {
                     wall_timer2 = 1;
                     wall_move_done2 = true;
                     
-                    std::cout << "set to  false" << std::endl;
+                    //std::cout << "set to  false" << std::endl;
                     //std::cout << "walls 3, 4 ON" << std::endl;
                 }
                 flashbg_red_executed2 = false;
